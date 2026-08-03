@@ -12,58 +12,54 @@
    * A different format will require also updating the theme in tailwind.config.ts.
   */
   :root {
-  --background: 0 0% 100%;
-  --foreground: 217 16% 21%;
+  /* Areia — fundo principal */
+  --background: 43 33% 94%;
+  --foreground: 0 0% 5%;
 
+  /* Branco — cards e superfícies elevadas */
   --card: 0 0% 100%;
-  --card-foreground: 217 16% 21%;
+  --card-foreground: 0 0% 5%;
 
   --popover: 0 0% 100%;
-  --popover-foreground: 217 16% 21%;
+  --popover-foreground: 0 0% 5%;
 
-  /* Dourado principal */
-  --primary: 47 67% 47%;
-  --primary-foreground: 0 0% 100%;
+  /* Grafite — identidade principal */
+  --primary: 0 0% 5%;
+  --primary-foreground: 43 33% 94%;
 
-  /* Azul de apoio */
-  --secondary: 211 33% 49%;
-  --secondary-foreground: 0 0% 100%;
+  /* Cinza — elementos secundários */
+  --secondary: 0 0% 65%;
+  --secondary-foreground: 0 0% 5%;
 
-  /* Cinza claro para áreas suaves */
-  --muted: 220 14% 96%;
-  --muted-foreground: 217 16% 21%;
+  /* Areia suave — áreas discretas */
+  --muted: 40 18% 90%;
+  --muted-foreground: 0 0% 38%;
 
-  /* Dourado dos botões e CTAs */
-  --accent: 47 67% 47%;
-  --accent-foreground: 0 0% 100%;
+  /* Verde tecnológico — ações e destaques */
+  --accent: 148 67% 43%;
+  --accent-foreground: 0 0% 5%;
 
-  /* Azul para links e destaques secundários */
-  --accent-secondary: 211 33% 49%;
-  --accent-secondary-foreground: 0 0% 100%;
+  /* Grafite — apoio e contraste */
+  --accent-secondary: 0 0% 5%;
+  --accent-secondary-foreground: 43 33% 94%;
 
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
+  --destructive-foreground: 0 0% 100%;
 
-  /* Bordas mais visíveis */
-  --border: 220 11% 80%;
-  --input: 220 13% 92%;
-
-  --ring: 47 67% 47%;
+  --border: 40 10% 78%;
+  --input: 40 14% 88%;
+  --ring: 148 62% 51%;
 
   --radius: 0.75rem;
 
-  /* Sidebar */
-  --sidebar-background: 0 0% 98%;
-  --sidebar-foreground: 217 16% 21%;
-
-  --sidebar-primary: 47 67% 47%;
-  --sidebar-primary-foreground: 0 0% 100%;
-
-  --sidebar-accent: 211 33% 49%;
-  --sidebar-accent-foreground: 0 0% 100%;
-
-  --sidebar-border: 220 13% 90%;
-  --sidebar-ring: 47 67% 47%;
+  --sidebar-background: 0 0% 100%;
+  --sidebar-foreground: 0 0% 5%;
+  --sidebar-primary: 148 62% 51%;
+  --sidebar-primary-foreground: 0 0% 5%;
+  --sidebar-accent: 40 18% 90%;
+  --sidebar-accent-foreground: 0 0% 5%;
+  --sidebar-border: 40 10% 82%;
+  --sidebar-ring: 148 62% 51%;
 }
 
   .dark {

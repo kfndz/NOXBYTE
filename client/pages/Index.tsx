@@ -179,7 +179,7 @@ const Index = () => {
                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   <Link
                     to="/catalogo"
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent px-7 py-3 font-semibold text-white transition hover:bg-accent/90 active:scale-[0.98]"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent px-7 py-3 font-semibold text-accent-foreground transition hover:bg-accent/90 active:scale-[0.98]"
                   >
                     Explorar produtos
                     <ChevronRight aria-hidden="true" className="h-4 w-4" />

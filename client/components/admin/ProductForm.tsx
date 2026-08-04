@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { categories } from "@/lib/categories";
 import type {
   Product,
+  ProductAvailability,
   ProductCreateInput,
 } from "@/types/product";
 
@@ -60,12 +61,16 @@ export default function ProductForm({
   const [marketplace, setMarketplace] = useState("");
   const [affiliateUrl, setAffiliateUrl] = useState("");
 
+  const [externalProductId, setExternalProductId] =
+    useState("");
+  const [availability, setAvailability] =
+    useState<ProductAvailability>("AVAILABLE");
+
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState<number | undefined>();
   const [reviewCount, setReviewCount] = useState<
     number | undefined
   >();
-  const [stock, setStock] = useState<number | undefined>(0);
 
   const [image, setImage] = useState("");
   const [badge, setBadge] = useState("");
@@ -100,6 +105,8 @@ export default function ProductForm({
       setSubcategory(product.subcategory || "");
       setMarketplace(product.marketplace || "");
       setAffiliateUrl(product.affiliateUrl || "");
+      setExternalProductId(product.externalProductId || "",);
+      setAvailability(product.availability || "AVAILABLE",);
       setDescription(product.description || "");
       setRating(product.rating ?? undefined);
 
@@ -109,7 +116,6 @@ export default function ProductForm({
           undefined,
       );
 
-      setStock(product.stock ?? 0);
       setImage(product.image || "");
       setBadge(product.badge || "");
       setFeatured(product.featured ?? false);
@@ -127,10 +133,11 @@ export default function ProductForm({
     setSubcategory("");
     setMarketplace("");
     setAffiliateUrl("");
+    setExternalProductId("");
+    setAvailability("AVAILABLE");
     setDescription("");
     setRating(undefined);
     setReviewCount(undefined);
-    setStock(0);
     setImage("");
     setBadge("");
     setFeatured(false);
@@ -168,9 +175,11 @@ export default function ProductForm({
       subcategoryId: subcategory || null,
       marketplace,
       affiliateUrl: affiliateUrl.trim(),
+      externalProductId: externalProductId.trim() || null,
+      availability,
+      priceCheckedAt: new Date().toISOString(),
       rating,
       reviewCount,
-      stock,
       featured,
       isOffer,
       isBestSeller,
@@ -294,30 +303,6 @@ export default function ProductForm({
                 value={reviewCount ?? ""}
                 onChange={(event) =>
                   setReviewCount(
-                    event.target.value
-                      ? Number(event.target.value)
-                      : undefined,
-                  )
-                }
-              />
-            </div>
-
-            <div>
-              <label
-                htmlFor="product-stock"
-                className="mb-2 block text-sm font-medium text-muted-foreground"
-              >
-                Estoque
-              </label>
-
-              <Input
-                id="product-stock"
-                type="number"
-                min="0"
-                inputMode="numeric"
-                value={stock ?? ""}
-                onChange={(event) =>
-                  setStock(
                     event.target.value
                       ? Number(event.target.value)
                       : undefined,
@@ -519,7 +504,6 @@ export default function ProductForm({
               >
                 Link de afiliado *
               </label>
-
               <Input
                 id="product-affiliate-url"
                 type="url"
@@ -531,7 +515,61 @@ export default function ProductForm({
                 placeholder="https://..."
                 required
               />
+
             </div>
+            <div>
+                <label
+                  htmlFor="product-external-id"
+                  className="mb-2 block text-sm font-medium text-muted-foreground"
+                >
+                  ID do produto no marketplace
+                </label>
+
+                <Input
+                  id="product-external-id"
+                  value={externalProductId}
+                  onChange={(event) => setExternalProductId(event.target.value)}
+                  placeholder="Ex.: MLB1234567890"
+                />
+
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  Opcional. Será utilizado futuramente para integração e
+                  atualização automática.
+                </p>
+              </div>
+
+              <div>
+                <label
+                  htmlFor="product-availability"
+                  className="mb-2 block text-sm font-medium text-muted-foreground"
+                >
+                  Disponibilidade *
+                </label>
+
+                <select
+                  id="product-availability"
+                  value={availability}
+                  onChange={(event) =>
+                    setAvailability(event.target.value as ProductAvailability)
+                  }
+                  required
+                  className={selectClassName}
+                >
+                  <option value="AVAILABLE">Disponível no marketplace</option>
+
+                  <option value="UNAVAILABLE">
+                    Indisponível no marketplace
+                  </option>
+
+                  <option value="UNKNOWN">
+                    Disponibilidade não confirmada
+                  </option>
+                </select>
+
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                  Selecione conforme a situação atual na loja parceira.
+                </p>
+              </div>
           </div>
         </section>
 

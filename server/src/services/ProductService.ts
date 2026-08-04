@@ -12,6 +12,9 @@ type ProductInput = {
   originalPrice?: number | string | null;
   affiliateUrl: string;
   marketplace: string;
+  externalProductId?: string | null;
+  priceCheckedAt?: string | Date | null;
+  availability?: "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN";
   image: string;
   rating?: number | string | null;
   reviewCount?: number | string | null;
@@ -37,6 +40,38 @@ function createSlug(value: string) {
 function normalizeOptionalString(value?: string | null) {
   const normalized = value?.trim();
   return normalized ? normalized : null;
+}
+
+function normalizeAvailability(
+  value?: string | null,
+): "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN" {
+  const availability = value?.trim().toUpperCase() || "AVAILABLE";
+
+  if (
+    availability !== "AVAILABLE" &&
+    availability !== "UNAVAILABLE" &&
+    availability !== "UNKNOWN"
+  ) {
+    throw new Error("Disponibilidade inválida.");
+  }
+
+  return availability;
+}
+
+function normalizePriceCheckedAt(
+  value?: string | Date | null,
+) {
+  if (!value) {
+    return new Date();
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Data de conferência do preço inválida.");
+  }
+
+  return date;
 }
 
 async function resolveCategoryId(categoryIdOrSlug: string) {
@@ -102,7 +137,16 @@ async function prepareProductData(input: ProductInput) {
         ? null
         : Number(input.originalPrice),
     affiliateUrl: input.affiliateUrl.trim(),
-    marketplace: input.marketplace.trim(),
+        marketplace: input.marketplace.trim(),
+    externalProductId: normalizeOptionalString(
+      input.externalProductId,
+    ),
+    priceCheckedAt: normalizePriceCheckedAt(
+      input.priceCheckedAt,
+    ),
+    availability: normalizeAvailability(
+      input.availability,
+    ),
     image: input.image.trim(),
     rating:
       input.rating === undefined ||
@@ -164,7 +208,23 @@ export const ProductService = {
           ? input.originalPrice
           : existingProduct.originalPrice?.toString() ?? null,
       affiliateUrl: input.affiliateUrl ?? existingProduct.affiliateUrl,
-      marketplace: input.marketplace ?? existingProduct.marketplace,
+            marketplace:
+        input.marketplace ?? existingProduct.marketplace,
+      externalProductId:
+        input.externalProductId !== undefined
+          ? input.externalProductId
+          : existingProduct.externalProductId,
+      priceCheckedAt:
+        input.priceCheckedAt !== undefined
+          ? input.priceCheckedAt
+          : existingProduct.priceCheckedAt,
+      availability:
+        input.availability !== undefined
+          ? input.availability
+          : (existingProduct.availability as
+              | "AVAILABLE"
+              | "UNAVAILABLE"
+              | "UNKNOWN"),
       image: input.image ?? existingProduct.image,
       rating:
         input.rating !== undefined

@@ -12,6 +12,42 @@ function createSlug(value: string) {
     .replace(/^-+|-+$/g, "");
 }
 
+function normalizeOptionalString(value: unknown) {
+  const normalized = String(value ?? "").trim();
+  return normalized || null;
+}
+
+function normalizeAvailability(
+  value: unknown,
+): "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN" {
+  const availability =
+    String(value ?? "AVAILABLE").trim().toUpperCase();
+
+  if (
+    availability !== "AVAILABLE" &&
+    availability !== "UNAVAILABLE" &&
+    availability !== "UNKNOWN"
+  ) {
+    throw new Error("Disponibilidade inválida.");
+  }
+
+  return availability;
+}
+
+function normalizePriceCheckedAt(value: unknown) {
+  if (!value) {
+    return new Date();
+  }
+
+  const date = new Date(String(value));
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Data de conferência do preço inválida.");
+  }
+
+  return date;
+}
+
 async function findProduct(idOrSlug: string) {
   return prisma.product.findFirst({
     where: {
@@ -110,8 +146,22 @@ async function prepareProductData(body: any, existingProduct?: any) {
           ? null
           : Number(body.originalPrice)
         : existingProduct?.originalPrice ?? null,
-    affiliateUrl,
+        affiliateUrl,
     marketplace,
+    externalProductId:
+      body.externalProductId !== undefined
+        ? normalizeOptionalString(body.externalProductId)
+        : existingProduct?.externalProductId ?? null,
+    priceCheckedAt:
+      body.priceCheckedAt !== undefined
+        ? normalizePriceCheckedAt(body.priceCheckedAt)
+        : existingProduct?.priceCheckedAt ?? new Date(),
+    availability:
+      body.availability !== undefined
+        ? normalizeAvailability(body.availability)
+        : normalizeAvailability(
+            existingProduct?.availability ?? "AVAILABLE",
+          ),
     image,
     rating:
       body.rating !== undefined

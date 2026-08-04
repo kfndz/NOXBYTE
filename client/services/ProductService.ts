@@ -69,6 +69,9 @@ function normalizeProduct(product: ApiProduct): Product {
     "/images/home-image.webp";
 
   const stock = Number(product.stock ?? 0);
+  const availability =
+    product.availability ??
+    (stock > 0 ? "AVAILABLE" : "UNKNOWN");
 
   return {
     ...product,
@@ -104,7 +107,9 @@ function normalizeProduct(product: ApiProduct): Product {
 
     stock,
 
-    inStock: stock > 0,
+    availability,
+
+    inStock: availability !== "UNAVAILABLE",
 
     category:
       typeof product.category === "string"

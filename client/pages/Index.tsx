@@ -8,6 +8,7 @@ import {
   Headphones,
   Lock,
   Truck,
+  Instagram,
 } from "lucide-react";
 
 import { Footer } from "@/components/Footer";
@@ -535,6 +536,40 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      <section
+        aria-label="Instagram da NOXBYTE"
+        className="border-t border-border bg-muted/30"
+      >
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/10">
+                <Instagram className="h-5 w-5 text-accent" />
+              </div>
+
+              <div>
+                <p className="font-semibold">Acompanhe a NOXBYTE</p>
+
+                <p className="text-sm text-muted-foreground">
+                  Novidades, produtos e ofertas no Instagram.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://www.instagram.com/noxbytebr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Seguir a NOXBYTE no Instagram"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-accent px-5 py-2.5 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-white"
+            >
+              <Instagram className="h-4 w-4" />
+              @noxbytebr
+            </a>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

@@ -1,21 +1,27 @@
-import { Header } from '@/components/Header';
-import { Footer } from '@/components/Footer';
-import { ChevronRight, Mail, Phone, MapPin, MessageCircle, Clock } from 'lucide-react';
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
+import {
+  ChevronRight,
+  Mail,
+  Instagram,
+  MapPin,
+  MessageCircle,
+} from "lucide-react";
+import { useState } from "react";
+import { Link } from "react-router-dom";
 
 const Contact = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: '',
+    name: "",
+    email: "",
+    subject: "",
+    message: "",
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Form submitted:', formData);
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    console.log("Form submitted:", formData);
+    setFormData({ name: "", email: "", subject: "", message: "" });
   };
 
   return (
@@ -26,7 +32,9 @@ const Contact = () => {
       <div className="border-b border-border bg-muted/30">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-2 text-sm">
-            <Link to="/" className="hover:text-accent transition-colors">Início</Link>
+            <Link to="/" className="hover:text-accent transition-colors">
+              Início
+            </Link>
             <ChevronRight className="w-4 h-4" />
             <span className="text-accent font-medium">Contato</span>
           </div>
@@ -38,7 +46,8 @@ const Contact = () => {
         <div className="container mx-auto px-4 text-center">
           <h1 className="text-4xl md:text-5xl font-bold mb-6">Fale Conosco</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-            Estamos aqui para ajudar. Entre em contato através do formulário, WhatsApp, email ou telefone
+            Estamos aqui para ajudar. Entre em contato através do formulário,
+            WhatsApp, email ou pelas nossas redes sociais.
           </p>
         </div>
       </section>
@@ -53,9 +62,14 @@ const Contact = () => {
                 <Mail className="w-7 h-7 text-accent" />
               </div>
               <h3 className="text-lg font-semibold mb-2">Email</h3>
-              <p className="text-muted-foreground mb-4">Responderemos em até 24 horas</p>
-              <a href="mailto:contato@premiumstore.com" className="text-accent font-semibold hover:underline">
-                contato@premiumstore.com
+              <p className="text-muted-foreground mb-4">
+                Responderemos em até 24 horas
+              </p>
+              <a
+                href="mailto:noxbyte.contact@gmail.com"
+                className="text-accent font-semibold hover:underline"
+              >
+                noxbyte.contact@gmail.com
               </a>
             </div>
 
@@ -65,21 +79,31 @@ const Contact = () => {
                 <MessageCircle className="w-7 h-7 text-accent-secondary" />
               </div>
               <h3 className="text-lg font-semibold mb-2">WhatsApp</h3>
-              <p className="text-muted-foreground mb-4">Resposta imediata durante horário comercial</p>
-              <a href="https://wa.me/5511999999999" className="text-accent-secondary font-semibold hover:underline">
-                (11) 99999-9999
-              </a>
+              <p className="text-muted-foreground mb-4">
+                Canal de Atendimento em breve. Aguarde novas atualizações.
+              </p>
             </div>
 
-            {/* Phone */}
-            <div className="bg-card border border-border rounded-lg p-8 text-center hover:shadow-lg transition-shadow">
-              <div className="w-14 h-14 bg-accent/10 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                <Phone className="w-7 h-7 text-accent" />
+            {/* Instagram */}
+            <div className="rounded-lg border border-border bg-card p-8 text-center transition-shadow hover:shadow-lg">
+              <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-lg bg-accent/10">
+                <Instagram className="h-7 w-7 text-accent" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">Telefone</h3>
-              <p className="text-muted-foreground mb-4">Seg-Sex: 9h às 18h</p>
-              <a href="tel:1133333333" className="text-accent font-semibold hover:underline">
-                (11) 3333-3333
+
+              <h3 className="mb-2 text-lg font-semibold">Instagram</h3>
+
+              <p className="mb-4 text-muted-foreground">
+                Acompanhe novidades, produtos e ofertas.
+              </p>
+
+              <a
+                href="https://www.instagram.com/noxbytebr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Acessar o Instagram da NOXBYTE"
+                className="font-semibold text-accent hover:underline"
+              >
+                @noxbytebr
               </a>
             </div>
           </div>
@@ -91,32 +115,44 @@ const Contact = () => {
               <h2 className="text-3xl font-bold mb-8">Envie uma Mensagem</h2>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Nome</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Nome
+                  </label>
                   <input
                     type="text"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
                     className="w-full px-4 py-3 border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Email</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Email
+                  </label>
                   <input
                     type="email"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                     className="w-full px-4 py-3 border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Assunto</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Assunto
+                  </label>
                   <select
                     value={formData.subject}
-                    onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, subject: e.target.value })
+                    }
                     className="w-full px-4 py-3 border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent focus:border-transparent"
                     required
                   >
@@ -130,10 +166,14 @@ const Contact = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold mb-2">Mensagem</label>
+                  <label className="block text-sm font-semibold mb-2">
+                    Mensagem
+                  </label>
                   <textarea
                     value={formData.message}
-                    onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, message: e.target.value })
+                    }
                     rows={5}
                     className="w-full px-4 py-3 border border-border rounded-lg outline-none focus:ring-2 focus:ring-accent focus:border-transparent resize-none"
                     required
@@ -152,7 +192,9 @@ const Contact = () => {
             {/* Info */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-3xl font-bold mb-8">Informações de Contato</h2>
+                <h2 className="text-3xl font-bold mb-8">
+                  Informações de Contato
+                </h2>
               </div>
 
               <div className="space-y-6">
@@ -163,23 +205,9 @@ const Contact = () => {
                   <div>
                     <h4 className="font-semibold mb-1">Endereço</h4>
                     <p className="text-muted-foreground">
-                      Avenida Paulista, 1000<br />
-                      São Paulo, SP 01312-100<br />
+                      Cuiabá - MT
+                      <br />
                       Brasil
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex gap-4">
-                  <div className="p-4 bg-accent-secondary/10 rounded-lg flex-shrink-0">
-                    <Clock className="w-6 h-6 text-accent-secondary" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold mb-1">Horário de Funcionamento</h4>
-                    <p className="text-muted-foreground">
-                      Segunda a Sexta: 9h às 18h<br />
-                      Sábado: 10h às 14h<br />
-                      Domingo: Fechado
                     </p>
                   </div>
                 </div>
@@ -188,7 +216,9 @@ const Contact = () => {
               {/* FAQ Link */}
               <div className="border-t border-border pt-8">
                 <h3 className="font-semibold mb-4">Outras Dúvidas?</h3>
-                <p className="text-muted-foreground mb-4">Confira nossa página de perguntas frequentes</p>
+                <p className="text-muted-foreground mb-4">
+                  Confira nossa página de perguntas frequentes
+                </p>
                 <Link
                   to="/faq"
                   className="inline-block px-6 py-2 border-2 border-accent text-accent rounded-lg font-semibold hover:bg-accent hover:text-white transition-all"

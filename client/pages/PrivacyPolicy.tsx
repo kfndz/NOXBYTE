@@ -101,9 +101,8 @@ const PrivacyPolicy = () => {
                 Se tiver qualquer dúvida sobre esta política ou sobre como suas informações são tratadas entre em contato conosco através dos nossos canais de atendimento:
               </p>
               <ul className="list-disc pl-6 mt-3 space-y-2">
-                <li>Email: privacidade@premiumstore.com</li>
-                <li>Telefone: (11) 3333-3333</li>
-                <li>WhatsApp: (11) 99999-9999</li>
+                <li>E-mail: noxbyte.contact@gmail.com</li>
+                <li>WhatsApp: Em breve</li>
               </ul>
             </div>
 

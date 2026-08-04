@@ -18,7 +18,7 @@ Uma plataforma full-stack de curadoria e divulgação de produtos afiliados volt
 
 **Website / Site**
 
-https://mp-vertise-chi.vercel.app/
+https://noxbyte-br.vercel.app/
 
 ---
 
@@ -132,9 +132,9 @@ PostgreSQL (Neon)
 # ⚙️ Installation | Instalação
 
 ```bash
-git clone https://github.com/kfndz/MP-Vertise
+git clone https://github.com/kfndz/NOXBYTE
 
-cd MP-Vertise
+cd NOXBYTE
 
 pnpm install
 
@@ -150,7 +150,7 @@ pnpm dev
 # 📁 Project Structure | Estrutura
 
 ```text
-MP-Vertise/
+NOXBYTE/
 ├── api/
 ├── client/
 ├── public/

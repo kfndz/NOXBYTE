@@ -177,11 +177,41 @@ export function Footer() {
               </li>
             </ul>
           </nav>
+
+          <section aria-labelledby="footer-connect-title">
+            <h2 id="footer-connect-title" className="mb-5 font-semibold">
+              Conecte-se
+            </h2>
+
+            <div className="space-y-4">
+              <a
+                href="https://www.instagram.com/noxbytebr/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Acessar o Instagram da NOXBYTE"
+                className="flex items-center gap-2 text-sm text-background/70 transition-colors hover:text-background"
+              >
+                <Instagram aria-hidden="true" className="h-4 w-4" />
+                @noxbytebr
+              </a>
+
+              <a
+                href="mailto:noxbyte.contact@gmail.com"
+                className="block break-words text-sm text-background/70 transition-colors hover:text-background"
+              >
+                noxbyte.contact@gmail.com
+              </a>
+
+              <p className="max-w-48 text-sm leading-6 text-background/50">
+                Atendimento exclusivamente online.
+              </p>
+            </div>
+          </section>
         </div>
 
         <div className="flex flex-col items-center justify-between gap-4 border-t border-background/20 pt-8 text-center md:flex-row md:text-left">
           <p className="text-sm text-background/70">
-            © 2026 NOXBYTE. Todos os direitos reservados.
+            © {new Date().getFullYear()} NOXBYTE. Todos os direitos reservados.
           </p>
 
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
@@ -193,9 +223,12 @@ export function Footer() {
               Compra concluída no marketplace
             </span>
 
-            <span className="text-xs text-background/50">
+            <Link
+              to="/privacidade"
+              className="text-xs text-background/50 transition-colors hover:text-background"
+            >
               Política de privacidade
-            </span>
+            </Link>
           </div>
         </div>
       </div>

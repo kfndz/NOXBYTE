@@ -174,10 +174,10 @@ const ShippingPolicy = () => {
 
             <div className="bg-muted/30 border border-border rounded-lg p-6 mt-8">
               <p className="text-sm">
-                <strong>Última atualização:</strong> Janeiro de 2024
+                <strong>Última atualização:</strong> Agosto de 2026
               </p>
               <p className="text-sm mt-2">
-                Para dúvidas sobre entrega: entrega@premiumstore.com | (11) 3333-3333
+                Em caso de dúvidas sobre entrega ou rastreamento, entre em contato diretamente com o marketplace responsável pela compra.
               </p>
             </div>
           </div>

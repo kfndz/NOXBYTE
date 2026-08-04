@@ -223,7 +223,7 @@ const ReturnPolicy = () => {
                 <strong>Última atualização:</strong> Janeiro de 2024
               </p>
               <p className="text-sm mt-2">
-                Para dúvidas sobre devoluções: devolucoes@premiumstore.com | (11) 3333-3333
+                Solicitações de troca, devolução ou reembolso devem ser realizadas diretamente no marketplace em que a compra foi concluída.
               </p>
             </div>
           </div>

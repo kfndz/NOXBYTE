@@ -103,7 +103,7 @@ const TermsOfUse = () => {
                 <strong>Última atualização:</strong> Julho de 2026
               </p>
               <p className="text-sm mt-2">
-                Para questões sobre estes Termos, entre em contato: termos@premiumstore.com
+                Para questões sobre estes Termos, entre em contato: noxbyte.contact@gmail.com
               </p>
             </div>
           </div>

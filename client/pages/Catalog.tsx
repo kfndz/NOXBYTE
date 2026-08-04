@@ -7,14 +7,12 @@ import { CategoryPageLayout } from "@/components/catalog/CategoryPageLayout";
 import { ProductFilters } from "@/components/catalog/ProductFilters";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { useProducts } from "@/hooks/useProducts";
+import { getCategoryBySlug } from "@/lib/categories";
 import {
   DEFAULT_PRODUCT_FILTERS,
   filterProducts,
 } from "@/utils/productFilters";
-import {
-  sortProducts,
-  type ProductSortOption,
-} from "@/utils/productSorting";
+import { sortProducts, type ProductSortOption } from "@/utils/productSorting";
 
 const Catalog = () => {
   const { products, loading, error } = useProducts();
@@ -25,19 +23,12 @@ const Catalog = () => {
     return params.get("q")?.trim() ?? "";
   }, [search]);
 
-  const [sortBy, setSortBy] =
-    useState<ProductSortOption>("relevancia");
+  const [sortBy, setSortBy] = useState<ProductSortOption>("relevancia");
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState(
-    DEFAULT_PRODUCT_FILTERS,
-  );
+  const [filters, setFilters] = useState(DEFAULT_PRODUCT_FILTERS);
 
   const filteredProducts = useMemo(() => {
-    const filtered = filterProducts(
-      products,
-      filters,
-      query,
-    );
+    const filtered = filterProducts(products, filters, query);
 
     return sortProducts(filtered, sortBy);
   }, [filters, products, query, sortBy]);
@@ -47,31 +38,18 @@ const Catalog = () => {
       new Set(
         products
           .map((product) => product.category)
-          .filter(
-            (category): category is string =>
-              Boolean(category),
-          ),
+          .filter((category): category is string => Boolean(category)),
       ),
     );
 
     return categorySlugs.map((category) => {
-      let formattedName = category
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (letter) =>
-          letter.toUpperCase(),
-        );
+      const registeredCategory = getCategoryBySlug(category);
 
-      if (category === "saude-beleza") {
-        formattedName = "Beleza & Cuidados Pessoais";
-      }
-
-      if (category === "moda-acessorios") {
-        formattedName = "Moda & Estilo";
-      }
-
-      if (category === "esporte-fitness") {
-        formattedName = "Esporte & Fitness";
-      }
+      const formattedName =
+        registeredCategory?.name ??
+        category
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (letter) => letter.toUpperCase());
 
       return {
         id: category,
@@ -136,16 +114,11 @@ const Catalog = () => {
                 <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
-                    onClick={() =>
-                      setShowFilters((current) => !current)
-                    }
+                    onClick={() => setShowFilters((current) => !current)}
                     aria-expanded={showFilters}
                     className="inline-flex min-h-10 items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-semibold transition hover:bg-muted lg:hidden"
                   >
-                    <Sliders
-                      aria-hidden="true"
-                      className="h-4 w-4"
-                    />
+                    <Sliders aria-hidden="true" className="h-4 w-4" />
                     Filtros
                   </button>
 
@@ -157,27 +130,15 @@ const Catalog = () => {
                     id="catalog-sort"
                     value={sortBy}
                     onChange={(event) =>
-                      setSortBy(
-                        event.target.value as ProductSortOption,
-                      )
+                      setSortBy(event.target.value as ProductSortOption)
                     }
                     className="min-h-10 rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent"
                   >
-                    <option value="relevancia">
-                      Relevância
-                    </option>
-                    <option value="menor-preco">
-                      Menor preço
-                    </option>
-                    <option value="maior-preco">
-                      Maior preço
-                    </option>
-                    <option value="mais-vendidos">
-                      Mais vendidos
-                    </option>
-                    <option value="novos">
-                      Mais novos
-                    </option>
+                    <option value="relevancia">Relevância</option>
+                    <option value="menor-preco">Menor preço</option>
+                    <option value="maior-preco">Maior preço</option>
+                    <option value="mais-vendidos">Mais vendidos</option>
+                    <option value="novos">Mais novos</option>
                   </select>
                 </div>
               </div>

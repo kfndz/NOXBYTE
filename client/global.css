@@ -13,7 +13,7 @@
   */
   :root {
   /* Areia — fundo principal */
-  --background: 43 33% 94%;
+  --background: 39 36% 90%;
   --foreground: 0 0% 5%;
 
   /* Branco — cards e superfícies elevadas */
@@ -63,46 +63,46 @@
 }
 
   .dark {
-    --background: 217 16% 12%;
-    --foreground: 0 0% 100%;
+  --background: 0 0% 5%;
+  --foreground: 43 33% 94%;
 
-    --card: 217 16% 21%;
-    --card-foreground: 0 0% 100%;
+  --card: 0 0% 9%;
+  --card-foreground: 43 33% 94%;
 
-    --popover: 217 16% 21%;
-    --popover-foreground: 0 0% 100%;
+  --popover: 0 0% 9%;
+  --popover-foreground: 43 33% 94%;
 
-    --primary: 44 83% 44%;
-    --primary-foreground: 0 0% 100%;
+  --primary: 148 67% 43%;
+  --primary-foreground: 0 0% 5%;
 
-    --secondary: 211 33% 49%;
-    --secondary-foreground: 217 16% 21%;
+  --secondary: 0 0% 65%;
+  --secondary-foreground: 0 0% 5%;
 
-    --muted: 217 16% 21%;
-    --muted-foreground: 0 0% 100%;
+  --muted: 0 0% 14%;
+  --muted-foreground: 0 0% 65%;
 
-    --accent: 44 83% 31%;
-    --accent-foreground: 0 0% 100%;
+  --accent: 148 67% 43%;
+  --accent-foreground: 0 0% 5%;
 
-    --accent-secondary: 35 35% 39%;
-    --accent-secondary-foreground: 0 0% 100%;
+  --accent-secondary: 43 33% 94%;
+  --accent-secondary-foreground: 0 0% 5%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 100%;
 
-    --border: 217 16% 30%;
-    --input: 217 16% 21%;
-    --ring: 44 83% 44%;
+  --border: 0 0% 24%;
+  --input: 0 0% 14%;
+  --ring: 148 67% 43%;
 
-    --sidebar-background: 217 16% 21%;
-    --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 44 83% 44%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 211 33% 49%;
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 217 16% 30%;
-    --sidebar-ring: 44 83% 44%;
-  }
+  --sidebar-background: 0 0% 9%;
+  --sidebar-foreground: 43 33% 94%;
+  --sidebar-primary: 148 67% 43%;
+  --sidebar-primary-foreground: 0 0% 5%;
+  --sidebar-accent: 0 0% 14%;
+  --sidebar-accent-foreground: 43 33% 94%;
+  --sidebar-border: 0 0% 24%;
+  --sidebar-ring: 148 67% 43%;
+}
 }
 
 @layer base {

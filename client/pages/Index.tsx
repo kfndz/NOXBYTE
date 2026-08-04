@@ -16,6 +16,7 @@ import { ProductCard } from "@/components/catalog/ProductCard";
 import { SectionHeader } from "@/components/catalog/SectionHeader";
 import { useProducts } from "@/hooks/useProducts";
 import { sortProducts } from "@/utils/productSorting";
+import { categories as allCategories } from "@/lib/categories";
 
 const carouselImages = [
   {
@@ -23,7 +24,7 @@ const carouselImages = [
     alt: "Vitrine inteligente da NOXBYTE",
   },
   {
-    src: "/images/home-image.webp",
+    src: "/images/hero-multicategoria-dark.webp",
     alt: "Seleção geral de produtos da NOXBYTE",
   },
   {
@@ -32,56 +33,47 @@ const carouselImages = [
   },
 ];
 
-const categories = [
-  {
-    name: "Moda & Estilo",
-    slug: "moda-acessorios",
-    image: "/images/moda-estilo-image.webp",
-    description: "Roupas, acessórios e tendências de moda",
-  },
-  {
-    name: "Beleza & Cuidados Pessoais",
-    slug: "saude-beleza",
-    image: "/images/produtos-beleza-image.webp",
-    description: "Maquiagem, perfumes, cosméticos e produtos para autocuidado",
-  },
-  {
-    name: "Casa & Decoração",
-    slug: "casa",
-    image: "/images/casa-image.webp",
-    description: "Móveis, decoração e utensílios para o seu lar",
-  },
-  {
-    name: "Utilidades",
-    slug: "utilidades",
-    image: "/images/utilidades-image.webp",
-    description: "Produtos úteis e práticos para o dia a dia",
-  },
-  {
-    name: "Esporte & Fitness",
-    slug: "esporte-fitness",
-    image: "/images/esportes-image.webp",
-    description: "Produtos para treinos, esportes e rotina ativa",
-  },
-  {
-    name: "Saúde & Bem-estar",
-    slug: "saude-beleza",
-    image: "/images/saude-image.webp",
-    description: "Produtos para saúde, conforto e bem-estar",
-  },
-  {
-    name: "Tecnologia & Gadgets",
-    slug: "tecnologia",
-    image: "/images/tecnologia-image.webp",
-    description: "Smartphones, notebooks, acessórios e gadgets",
-  },
-  {
-    name: "Pet Shop",
-    slug: "pet-shop",
-    image: "/images/petshop-image.webp",
-    description: "Produtos para o cuidado do seu pet",
-  },
+const categoryImages: Record<string, string> = {
+  tecnologia: "/images/tecnologia-image.webp",
+  games: "/images/games-image.webp",
+  casa: "/images/casa-image.webp",
+  eletrodomesticos: "/images/eletrodomesticos-image.webp",
+  "moda-acessorios": "/images/moda-estilo-image.webp",
+  "saude-beleza": "/images/produtos-beleza-image.webp",
+  "esporte-fitness": "/images/esportes-image.webp",
+  utilidades: "/images/utilidades-image.webp",
+  automotivo: "/images/automotivo-image.webp",
+  "pet-shop": "/images/petshop-image.webp",
+  "bebes-criancas": "/images/bebes-criancas-image.webp",
+};
+
+const featuredCategorySlugs = [
+  "tecnologia",
+  "games",
+  "casa",
+  "eletrodomesticos",
+  "moda-acessorios",
+  "saude-beleza",
+  "esporte-fitness",
+  "pet-shop",
 ];
+
+const categories = featuredCategorySlugs.flatMap((slug) => {
+  const category = allCategories.find((item) => item.slug === slug);
+
+  if (!category) {
+    return [];
+  }
+
+  return [
+    {
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      image: categoryImages[category.slug] ?? "/images/home-image.webp",
+    },
+  ];
+});
 
 const faqs = [
   {
@@ -282,6 +274,10 @@ const Index = () => {
                       src={category.image}
                       alt={category.name}
                       loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = "/images/home-image.webp";
+                      }}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>

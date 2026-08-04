@@ -1,12 +1,15 @@
 import {
-  Shirt,
+  Baby,
+  Dumbbell,
+  Gamepad2,
   Heart,
   Home,
-  Utensils,
-  Dumbbell,
-  Smartphone,
   PawPrint,
   Settings,
+  Shirt,
+  Smartphone,
+  Utensils,
+  Zap,
 } from "lucide-react";
 
 import type { LucideIcon } from "lucide-react";
@@ -28,137 +31,20 @@ export type Category = {
 
 export const categories: Category[] = [
   {
-    id: "moda-acessorios",
-    name: "Moda & Estilo",
-    slug: "moda-acessorios",
-    description: "Roupas, acessórios e tendências de moda",
-    icon: Shirt,
-    subcategories: [
-      { id: "relogios", name: "Relógios", slug: "relogios" },
-      { id: "bolsas", name: "Bolsas", slug: "bolsas" },
-      { id: "carteiras", name: "Carteiras", slug: "carteiras" },
-      { id: "oculos", name: "Óculos", slug: "oculos" },
-      { id: "joias", name: "Joias", slug: "joias" },
-      { id: "colares", name: "Colares", slug: "colares" },
-      { id: "correntes", name: "Correntes", slug: "correntes" },
-      { id: "pulseiras", name: "Pulseiras", slug: "pulseiras" },
-      { id: "aneis", name: "Anéis", slug: "aneis" },
-      { id: "brincos", name: "Brincos", slug: "brincos" },
-    ],
-  },
-  {
-    id: "saude-beleza",
-    name: "Beleza & Cuidados Pessoais",
-    slug: "saude-beleza",
-    description:
-      "Maquiagem, perfumes, cosméticos e produtos de autocuidado",
-    icon: Heart,
-    subcategories: [
-      {
-        id: "cuidados-pessoais",
-        name: "Cuidados Pessoais",
-        slug: "cuidados-pessoais",
-      },
-      {
-        id: "cosmeticos",
-        name: "Cosméticos",
-        slug: "cosmeticos",
-      },
-      {
-        id: "bem-estar",
-        name: "Bem-estar",
-        slug: "bem-estar",
-      },
-      {
-        id: "higiene",
-        name: "Higiene",
-        slug: "higiene",
-      },
-    ],
-  },
-  {
-    id: "casa",
-    name: "Casa & Decoração",
-    slug: "casa",
-    description: "Móveis, decoração e utensílios para o seu lar",
-    icon: Home,
-    subcategories: [
-      { id: "cozinha", name: "Cozinha", slug: "cozinha" },
-      {
-        id: "decoracao",
-        name: "Decoração",
-        slug: "decoracao",
-      },
-      {
-        id: "organizacao",
-        name: "Organização",
-        slug: "organizacao",
-      },
-      { id: "limpeza", name: "Limpeza", slug: "limpeza" },
-    ],
-  },
-  {
-    id: "utilidades",
-    name: "Utilidades",
-    slug: "utilidades",
-    description: "Produtos úteis e práticos para o dia a dia",
-    icon: Utensils,
-    subcategories: [
-      {
-        id: "organizadores",
-        name: "Organizadores",
-        slug: "organizadores",
-      },
-      {
-        id: "ferramentas",
-        name: "Ferramentas",
-        slug: "ferramentas",
-      },
-    ],
-  },
-  {
-    id: "esporte-fitness",
-    name: "Esporte e Fitness",
-    slug: "esporte-fitness",
-    description: "Produtos para treinos, esportes e rotina ativa",
-    icon: Dumbbell,
-    subcategories: [
-      {
-        id: "musculacao",
-        name: "Musculação",
-        slug: "musculacao",
-      },
-      { id: "corrida", name: "Corrida", slug: "corrida" },
-      { id: "yoga", name: "Yoga", slug: "yoga" },
-      {
-        id: "acessorios-esporte",
-        name: "Acessórios",
-        slug: "acessorios-esporte",
-      },
-    ],
-  },
-  {
     id: "tecnologia",
     name: "Tecnologia",
     slug: "tecnologia",
-    description: "Smartphones, notebooks, acessórios e gadgets",
+    description: "Smartphones, computadores, eletrônicos e acessórios",
     icon: Smartphone,
     subcategories: [
-      {
-        id: "smartphones",
-        name: "Smartphones",
-        slug: "smartphones",
-      },
-      {
-        id: "informatica",
-        name: "Informática",
-        slug: "informatica",
-      },
+      { id: "smartphones", name: "Smartphones", slug: "smartphones" },
+      { id: "informatica", name: "Informática", slug: "informatica" },
       { id: "audio", name: "Áudio", slug: "audio" },
+      { id: "wearables", name: "Wearables", slug: "wearables" },
       {
-        id: "smart-home",
-        name: "Smart Home",
-        slug: "smart-home",
+        id: "seguranca-smart-home",
+        name: "Segurança",
+        slug: "seguranca-smart-home",
       },
       {
         id: "acessorios-tech",
@@ -168,23 +54,178 @@ export const categories: Category[] = [
     ],
   },
   {
-    id: "pet-shop",
-    name: "Pet Shop",
-    slug: "pet-shop",
-    description: "Produtos para cuidado e bem-estar do seu pet",
-    icon: PawPrint,
+    id: "games",
+    name: "Games",
+    slug: "games",
+    description: "Consoles, jogos, periféricos e equipamentos gamer",
+    icon: Gamepad2,
     subcategories: [
-      { id: "caes", name: "Cães", slug: "caes" },
-      { id: "gatos", name: "Gatos", slug: "gatos" },
+      { id: "consoles", name: "Consoles", slug: "consoles" },
+      { id: "jogos", name: "Jogos", slug: "jogos" },
       {
-        id: "brinquedos-pet",
-        name: "Brinquedos",
-        slug: "brinquedos-pet",
+        id: "perifericos",
+        name: "Periféricos",
+        slug: "perifericos",
       },
       {
-        id: "higiene-pet",
-        name: "Higiene",
-        slug: "higiene-pet",
+        id: "cadeiras-gamer",
+        name: "Cadeiras Gamer",
+        slug: "cadeiras-gamer",
+      },
+    ],
+  },
+  {
+    id: "casa",
+    name: "Casa & Cozinha",
+    slug: "casa",
+    description: "Produtos para equipar, organizar e decorar sua casa",
+    icon: Home,
+    subcategories: [
+      { id: "cozinha", name: "Cozinha", slug: "cozinha" },
+      { id: "decoracao", name: "Decoração", slug: "decoracao" },
+      { id: "organizacao", name: "Organização", slug: "organizacao" },
+      {
+        id: "cama-mesa-banho",
+        name: "Cama, Mesa & Banho",
+        slug: "cama-mesa-banho",
+      },
+      { id: "moveis", name: "Móveis", slug: "moveis" },
+    ],
+  },
+  {
+    id: "eletrodomesticos",
+    name: "Eletrodomésticos",
+    slug: "eletrodomesticos",
+    description: "Eletrodomésticos e equipamentos para facilitar sua rotina",
+    icon: Zap,
+    subcategories: [
+      {
+        id: "eletroportateis",
+        name: "Eletroportáteis",
+        slug: "eletroportateis",
+      },
+      {
+        id: "cozinha-eletrica",
+        name: "Cozinha Elétrica",
+        slug: "cozinha-eletrica",
+      },
+      {
+        id: "climatizacao",
+        name: "Climatização",
+        slug: "climatizacao",
+      },
+      {
+        id: "limpeza-eletrica",
+        name: "Limpeza",
+        slug: "limpeza-eletrica",
+      },
+    ],
+  },
+  {
+    id: "moda-acessorios",
+    name: "Moda & Acessórios",
+    slug: "moda-acessorios",
+    description: "Roupas, calçados, bolsas e acessórios para todos os estilos",
+    icon: Shirt,
+    subcategories: [
+      {
+        id: "moda-feminina",
+        name: "Moda Feminina",
+        slug: "moda-feminina",
+      },
+      {
+        id: "moda-masculina",
+        name: "Moda Masculina",
+        slug: "moda-masculina",
+      },
+      { id: "calcados", name: "Calçados", slug: "calcados" },
+      {
+        id: "bolsas-carteiras",
+        name: "Bolsas & Carteiras",
+        slug: "bolsas-carteiras",
+      },
+      {
+        id: "relogios-joias",
+        name: "Relógios & Joias",
+        slug: "relogios-joias",
+      },
+    ],
+  },
+  {
+    id: "saude-beleza",
+    name: "Beleza & Cuidados",
+    slug: "saude-beleza",
+    description: "Beleza, higiene, saúde e cuidados pessoais",
+    icon: Heart,
+    subcategories: [
+      { id: "maquiagem", name: "Maquiagem", slug: "maquiagem" },
+      {
+        id: "cuidados-com-a-pele",
+        name: "Cuidados com a Pele",
+        slug: "cuidados-com-a-pele",
+      },
+      {
+        id: "cabelos",
+        name: "Cuidados com o Cabelo",
+        slug: "cabelos",
+      },
+      { id: "perfumaria", name: "Perfumaria", slug: "perfumaria" },
+      {
+        id: "saude-bem-estar",
+        name: "Saúde & Bem-estar",
+        slug: "saude-bem-estar",
+      },
+    ],
+  },
+  {
+    id: "esporte-fitness",
+    name: "Esporte & Fitness",
+    slug: "esporte-fitness",
+    description: "Produtos para treinos, esportes e uma rotina ativa",
+    icon: Dumbbell,
+    subcategories: [
+      { id: "musculacao", name: "Musculação", slug: "musculacao" },
+      { id: "corrida", name: "Corrida", slug: "corrida" },
+      { id: "ciclismo", name: "Ciclismo", slug: "ciclismo" },
+      {
+        id: "esportes",
+        name: "Esportes",
+        slug: "esportes",
+      },
+      {
+        id: "suplementos",
+        name: "Suplementos",
+        slug: "suplementos",
+      },
+    ],
+  },
+  {
+    id: "utilidades",
+    name: "Utilidades & Ferramentas",
+    slug: "utilidades",
+    description:
+      "Ferramentas, organização e produtos práticos para o dia a dia",
+    icon: Utensils,
+    subcategories: [
+      {
+        id: "ferramentas",
+        name: "Ferramentas",
+        slug: "ferramentas",
+      },
+      {
+        id: "organizadores",
+        name: "Organizadores",
+        slug: "organizadores",
+      },
+      {
+        id: "jardim",
+        name: "Jardim",
+        slug: "jardim",
+      },
+      {
+        id: "material-eletrico",
+        name: "Material Elétrico",
+        slug: "material-eletrico",
       },
     ],
   },
@@ -192,31 +233,90 @@ export const categories: Category[] = [
     id: "automotivo",
     name: "Automotivo",
     slug: "automotivo",
-    description: "Acessórios e utilidades para o seu carro",
+    description: "Acessórios, equipamentos e cuidados para veículos",
     icon: Settings,
     subcategories: [
-      { id: "interior", name: "Interior", slug: "interior" },
-      { id: "exterior", name: "Exterior", slug: "exterior" },
       {
         id: "acessorios-auto",
         name: "Acessórios",
         slug: "acessorios-auto",
       },
       {
-        id: "organizacao-auto",
-        name: "Organização",
-        slug: "organizacao-auto",
+        id: "som-automotivo",
+        name: "Som Automotivo",
+        slug: "som-automotivo",
+      },
+      {
+        id: "limpeza-automotiva",
+        name: "Limpeza e Cuidados",
+        slug: "limpeza-automotiva",
+      },
+      {
+        id: "motos",
+        name: "Motos",
+        slug: "motos",
+      },
+    ],
+  },
+  {
+    id: "pet-shop",
+    name: "Pet Shop",
+    slug: "pet-shop",
+    description: "Alimentação, higiene e acessórios para animais",
+    icon: PawPrint,
+    subcategories: [
+      { id: "caes", name: "Cães", slug: "caes" },
+      { id: "gatos", name: "Gatos", slug: "gatos" },
+      {
+        id: "alimentacao-pet",
+        name: "Alimentação",
+        slug: "alimentacao-pet",
+      },
+      {
+        id: "higiene-pet",
+        name: "Higiene",
+        slug: "higiene-pet",
+      },
+      {
+        id: "acessorios-pet",
+        name: "Acessórios",
+        slug: "acessorios-pet",
+      },
+    ],
+  },
+  {
+    id: "bebes-criancas",
+    name: "Bebês & Crianças",
+    slug: "bebes-criancas",
+    description: "Cuidados, brinquedos e produtos para os pequenos",
+    icon: Baby,
+    subcategories: [
+      {
+        id: "cuidados-bebe",
+        name: "Cuidados com o Bebê",
+        slug: "cuidados-bebe",
+      },
+      {
+        id: "brinquedos",
+        name: "Brinquedos",
+        slug: "brinquedos",
+      },
+      {
+        id: "roupas-infantis",
+        name: "Roupas Infantis",
+        slug: "roupas-infantis",
+      },
+      {
+        id: "passeio",
+        name: "Passeio",
+        slug: "passeio",
       },
     ],
   },
 ];
 
-export function getCategoryBySlug(
-  slug: string,
-): Category | undefined {
-  return categories.find(
-    (category) => category.slug === slug,
-  );
+export function getCategoryBySlug(slug: string): Category | undefined {
+  return categories.find((category) => category.slug === slug);
 }
 
 export function getSubcategoryBySlug(
@@ -226,15 +326,10 @@ export function getSubcategoryBySlug(
   const category = getCategoryBySlug(categorySlug);
 
   return category?.subcategories.find(
-    (subcategory) =>
-      subcategory.slug === subcategorySlug,
+    (subcategory) => subcategory.slug === subcategorySlug,
   );
 }
 
-export function getCategoryById(
-  id: string,
-): Category | undefined {
-  return categories.find(
-    (category) => category.id === id,
-  );
+export function getCategoryById(id: string): Category | undefined {
+  return categories.find((category) => category.id === id);
 }

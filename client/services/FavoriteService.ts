@@ -1,4 +1,4 @@
-const FAVORITES_KEY = "mp_vertise_favorites";
+const FAVORITES_KEY = "noxbyte_favorites";
 const FAVORITES_EVENT = "favorites-updated";
 
 function notifyFavoritesUpdated() {

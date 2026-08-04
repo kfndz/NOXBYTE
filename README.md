@@ -1,4 +1,4 @@
-# MP Vertise
+# NOXBYTE
 
 🇺🇸 English | 🇧🇷 Português
 
@@ -18,13 +18,13 @@ Uma plataforma full-stack de curadoria e divulgação de produtos afiliados volt
 
 **Website / Site**
 
-https://mp-vertise-chi.vercel.app/
+https://noxbyte-br.vercel.app/
 
 ---
 
 # 🇺🇸 About
 
-MP Vertise brings together selected products from multiple marketplaces into a single browsing experience.
+NOXBYTE brings together selected products from multiple marketplaces into a single browsing experience.
 
 Visitors can browse categories, search products, save favorites, and access partner marketplaces through affiliate links.
 
@@ -34,7 +34,7 @@ The platform does **not** process orders or payments. Purchases are completed di
 
 # 🇧🇷 Sobre
 
-A MP Vertise reúne produtos selecionados de diferentes marketplaces em uma única experiência de navegação.
+A NOXBYTE reúne produtos selecionados de diferentes marketplaces em uma única experiência de navegação.
 
 Os visitantes podem explorar categorias, pesquisar produtos, salvar favoritos e acessar o marketplace parceiro por meio de links de afiliado.
 
@@ -132,9 +132,9 @@ PostgreSQL (Neon)
 # ⚙️ Installation | Instalação
 
 ```bash
-git clone https://github.com/kfndz/MP-Vertise
+git clone https://github.com/kfndz/NOXBYTE
 
-cd MP-Vertise
+cd NOXBYTE
 
 pnpm install
 
@@ -150,7 +150,7 @@ pnpm dev
 # 📁 Project Structure | Estrutura
 
 ```text
-MP-Vertise/
+NOXBYTE/
 ├── api/
 ├── client/
 ├── public/
@@ -185,13 +185,13 @@ MP-Vertise/
 
 # 💼 Business Model | Modelo de Negócio
 
-MP Vertise operates as an affiliate marketing platform.
+NOXBYTE operates as an affiliate marketing platform.
 
 Products are displayed in the catalog, and users are redirected to partner marketplaces where purchases, shipping, returns, and payments are handled.
 
 ---
 
-A MP Vertise funciona como uma plataforma de marketing de afiliados.
+A NOXBYTE funciona como uma plataforma de marketing de afiliados.
 
 Os produtos são divulgados no catálogo e o usuário é redirecionado para o marketplace parceiro, onde pagamento, entrega, troca e devolução são processados.
 

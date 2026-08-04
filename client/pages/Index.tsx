@@ -8,6 +8,7 @@ import {
   Headphones,
   Lock,
   Truck,
+  Instagram,
 } from "lucide-react";
 
 import { Footer } from "@/components/Footer";
@@ -16,15 +17,16 @@ import { ProductCard } from "@/components/catalog/ProductCard";
 import { SectionHeader } from "@/components/catalog/SectionHeader";
 import { useProducts } from "@/hooks/useProducts";
 import { sortProducts } from "@/utils/productSorting";
+import { categories as allCategories } from "@/lib/categories";
 
 const carouselImages = [
   {
     src: "/images/hero-geral.webp",
-    alt: "Vitrine inteligente da MP Vertise",
+    alt: "Vitrine inteligente da NOXBYTE",
   },
   {
-    src: "/images/home-image.webp",
-    alt: "Seleção geral de produtos da MP Vertise",
+    src: "/images/hero-multicategoria-dark.webp",
+    alt: "Seleção geral de produtos da NOXBYTE",
   },
   {
     src: "/images/hero-3.webp",
@@ -32,56 +34,47 @@ const carouselImages = [
   },
 ];
 
-const categories = [
-  {
-    name: "Moda & Estilo",
-    slug: "moda-acessorios",
-    image: "/images/moda-estilo-image.webp",
-    description: "Roupas, acessórios e tendências de moda",
-  },
-  {
-    name: "Beleza & Cuidados Pessoais",
-    slug: "saude-beleza",
-    image: "/images/produtos-beleza-image.webp",
-    description: "Maquiagem, perfumes, cosméticos e produtos para autocuidado",
-  },
-  {
-    name: "Casa & Decoração",
-    slug: "casa",
-    image: "/images/casa-image.webp",
-    description: "Móveis, decoração e utensílios para o seu lar",
-  },
-  {
-    name: "Utilidades",
-    slug: "utilidades",
-    image: "/images/utilidades-image.webp",
-    description: "Produtos úteis e práticos para o dia a dia",
-  },
-  {
-    name: "Esporte & Fitness",
-    slug: "esporte-fitness",
-    image: "/images/esportes-image.webp",
-    description: "Produtos para treinos, esportes e rotina ativa",
-  },
-  {
-    name: "Saúde & Bem-estar",
-    slug: "saude-beleza",
-    image: "/images/saude-image.webp",
-    description: "Produtos para saúde, conforto e bem-estar",
-  },
-  {
-    name: "Tecnologia & Gadgets",
-    slug: "tecnologia",
-    image: "/images/tecnologia-image.webp",
-    description: "Smartphones, notebooks, acessórios e gadgets",
-  },
-  {
-    name: "Pet Shop",
-    slug: "pet-shop",
-    image: "/images/petshop-image.webp",
-    description: "Produtos para o cuidado do seu pet",
-  },
+const categoryImages: Record<string, string> = {
+  tecnologia: "/images/tecnologia-image.webp",
+  games: "/images/games-image.webp",
+  casa: "/images/casa-image.webp",
+  eletrodomesticos: "/images/eletrodomesticos-image.webp",
+  "moda-acessorios": "/images/moda-estilo-image.webp",
+  "saude-beleza": "/images/produtos-beleza-image.webp",
+  "esporte-fitness": "/images/esportes-image.webp",
+  utilidades: "/images/utilidades-image.webp",
+  automotivo: "/images/automotivo-image.webp",
+  "pet-shop": "/images/petshop-image.webp",
+  "bebes-criancas": "/images/bebes-criancas-image.webp",
+};
+
+const featuredCategorySlugs = [
+  "tecnologia",
+  "games",
+  "casa",
+  "eletrodomesticos",
+  "moda-acessorios",
+  "saude-beleza",
+  "esporte-fitness",
+  "pet-shop",
 ];
+
+const categories = featuredCategorySlugs.flatMap((slug) => {
+  const category = allCategories.find((item) => item.slug === slug);
+
+  if (!category) {
+    return [];
+  }
+
+  return [
+    {
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+      image: categoryImages[category.slug] ?? "/images/home-image.webp",
+    },
+  ];
+});
 
 const faqs = [
   {
@@ -92,7 +85,7 @@ const faqs = [
   {
     question: "Eu pago algo a mais para comprar por aqui?",
     answer:
-      "Não. A MP Vertise funciona como uma vitrine de produtos afiliados e não cobra taxas adicionais do usuário.",
+      "Não. A NOXBYTE funciona como uma vitrine de produtos afiliados e não cobra taxas adicionais do usuário.",
   },
   {
     question: "Como funciona o envio e o rastreamento?",
@@ -179,7 +172,7 @@ const Index = () => {
                 <div className="flex flex-col gap-3 sm:flex-row sm:gap-4">
                   <Link
                     to="/catalogo"
-                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent px-7 py-3 font-semibold text-white transition hover:bg-accent/90 active:scale-[0.98]"
+                    className="inline-flex min-h-12 items-center justify-center gap-2 rounded-xl bg-accent px-7 py-3 font-semibold text-accent-foreground transition hover:bg-accent/90 active:scale-[0.98]"
                   >
                     Explorar produtos
                     <ChevronRight aria-hidden="true" className="h-4 w-4" />
@@ -197,7 +190,7 @@ const Index = () => {
               {/* Carrossel */}
               <div
                 className="group relative hidden md:block"
-                aria-label="Destaques da MP Vertise"
+                aria-label="Destaques da NOXBYTE"
               >
                 <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
                   {carouselImages.map((image, index) => (
@@ -282,6 +275,10 @@ const Index = () => {
                       src={category.image}
                       alt={category.name}
                       loading="lazy"
+                      onError={(event) => {
+                        event.currentTarget.onerror = null;
+                        event.currentTarget.src = "/images/home-image.webp";
+                      }}
                       className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
                     />
                   </div>
@@ -350,7 +347,7 @@ const Index = () => {
                   to="/sobre"
                   className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold transition hover:border-accent hover:text-accent"
                 >
-                  Conhecer a MP Vertise
+                  Conhecer a NOXBYTE
                 </Link>
               </div>
             )}
@@ -361,7 +358,7 @@ const Index = () => {
         <section className="border-t border-border bg-foreground py-16 text-background md:py-24 lg:py-32">
           <div className="container mx-auto px-4">
             <SectionHeader
-              title="Por que escolher a MP Vertise"
+              title="Por que escolher a NOXBYTE"
               description="Organizamos produtos e oportunidades para facilitar sua pesquisa"
             />
 
@@ -539,6 +536,40 @@ const Index = () => {
           </div>
         </section>
       </main>
+
+      <section
+        aria-label="Instagram da NOXBYTE"
+        className="border-t border-border bg-muted/30"
+      >
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-full bg-accent/10">
+                <Instagram className="h-5 w-5 text-accent" />
+              </div>
+
+              <div>
+                <p className="font-semibold">Acompanhe a NOXBYTE</p>
+
+                <p className="text-sm text-muted-foreground">
+                  Novidades, produtos e ofertas no Instagram.
+                </p>
+              </div>
+            </div>
+
+            <a
+              href="https://www.instagram.com/noxbytebr/"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Seguir a NOXBYTE no Instagram"
+              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-accent px-5 py-2.5 text-sm font-semibold text-accent transition-colors hover:bg-accent hover:text-white"
+            >
+              <Instagram className="h-4 w-4" />
+              @noxbytebr
+            </a>
+          </div>
+        </div>
+      </section>
 
       <Footer />
     </div>

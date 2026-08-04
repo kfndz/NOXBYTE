@@ -143,9 +143,9 @@ export function Header() {
      */
     <div className="sticky top-0 z-50">
       {/* Announcement Bar */}
-      <div className="bg-accent px-4 py-2 text-center text-xs font-medium leading-snug text-white sm:text-sm">
-        Produtos Exclusivos com as melhores ofertas!
-        <span className="ml-1">Aproveite agora!</span>
+      <div className="bg-foreground px-4 py-2 text-center text-xs font-medium leading-snug text-background sm:text-sm">
+        Curadoria inteligente, ofertas de verdade.
+        <span className="ml-1 text-accent">Descubra agora.</span>
       </div>
 
       {/* Main Header */}
@@ -158,11 +158,20 @@ export function Header() {
               onClick={closeMobileMenu}
               className="flex min-w-0 flex-shrink-0 items-center overflow-hidden"
             >
-              <img
-                src="/logo-mp.png"
-                alt="MP Vertise"
-                className="w-[78px] h-auto object-contain sm:w-[84px] md:w-[92px] lg:w-[96px] xl:w-[108px]"
-              />
+              <div className="flex items-center gap-2 sm:gap-3">
+                <img
+                  src="/branding/noxbyte-logo-black.svg"
+                  alt=""
+                  aria-hidden="true"
+                  className="h-9 w-auto object-contain sm:h-10 md:h-11"
+                />
+
+                <img
+                  src="/branding/noxbyte-wordmark-black.svg"
+                  alt="NOXBYTE"
+                  className="h-4 w-auto object-contain sm:h-[18px] md:h-5"
+                />
+              </div>
             </Link>
 
             {/* Desktop Navigation */}

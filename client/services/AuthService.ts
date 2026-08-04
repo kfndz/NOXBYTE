@@ -1,4 +1,4 @@
-const AUTH_TOKEN_KEY = "mp_vertise_admin_token";
+const AUTH_TOKEN_KEY = "noxbyte_admin_token";
 
 interface LoginResponse {
   token: string;

@@ -20,11 +20,11 @@ import { sortProducts } from "@/utils/productSorting";
 const carouselImages = [
   {
     src: "/images/hero-geral.webp",
-    alt: "Vitrine inteligente da MP Vertise",
+    alt: "Vitrine inteligente da NOXBYTE",
   },
   {
     src: "/images/home-image.webp",
-    alt: "Seleção geral de produtos da MP Vertise",
+    alt: "Seleção geral de produtos da NOXBYTE",
   },
   {
     src: "/images/hero-3.webp",
@@ -92,7 +92,7 @@ const faqs = [
   {
     question: "Eu pago algo a mais para comprar por aqui?",
     answer:
-      "Não. A MP Vertise funciona como uma vitrine de produtos afiliados e não cobra taxas adicionais do usuário.",
+      "Não. A NOXBYTE funciona como uma vitrine de produtos afiliados e não cobra taxas adicionais do usuário.",
   },
   {
     question: "Como funciona o envio e o rastreamento?",
@@ -197,7 +197,7 @@ const Index = () => {
               {/* Carrossel */}
               <div
                 className="group relative hidden md:block"
-                aria-label="Destaques da MP Vertise"
+                aria-label="Destaques da NOXBYTE"
               >
                 <div className="relative aspect-square overflow-hidden rounded-2xl bg-muted">
                   {carouselImages.map((image, index) => (
@@ -350,7 +350,7 @@ const Index = () => {
                   to="/sobre"
                   className="mt-6 inline-flex min-h-11 items-center justify-center rounded-xl border border-border bg-background px-5 py-2.5 text-sm font-semibold transition hover:border-accent hover:text-accent"
                 >
-                  Conhecer a MP Vertise
+                  Conhecer a NOXBYTE
                 </Link>
               </div>
             )}
@@ -361,7 +361,7 @@ const Index = () => {
         <section className="border-t border-border bg-foreground py-16 text-background md:py-24 lg:py-32">
           <div className="container mx-auto px-4">
             <SectionHeader
-              title="Por que escolher a MP Vertise"
+              title="Por que escolher a NOXBYTE"
               description="Organizamos produtos e oportunidades para facilitar sua pesquisa"
             />
 

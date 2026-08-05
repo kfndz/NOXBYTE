@@ -1,9 +1,4 @@
-import {
-  useEffect,
-  useMemo,
-  useState,
-  type FormEvent,
-} from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { Save, X } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -51,40 +46,31 @@ export default function ProductForm({
 }: Props) {
   const [name, setName] = useState("");
   const [brand, setBrand] = useState("");
-  const [price, setPrice] = useState(0);
-  const [originalPrice, setOriginalPrice] = useState<
-    number | undefined
-  >();
+  const [price, setPrice] = useState<number | undefined>();
+  const [originalPrice, setOriginalPrice] = useState<number | undefined>();
 
   const [category, setCategory] = useState("");
   const [subcategory, setSubcategory] = useState("");
   const [marketplace, setMarketplace] = useState("");
   const [affiliateUrl, setAffiliateUrl] = useState("");
 
-  const [externalProductId, setExternalProductId] =
-    useState("");
+  const [externalProductId, setExternalProductId] = useState("");
   const [availability, setAvailability] =
     useState<ProductAvailability>("AVAILABLE");
 
   const [description, setDescription] = useState("");
   const [rating, setRating] = useState<number | undefined>();
-  const [reviewCount, setReviewCount] = useState<
-    number | undefined
-  >();
+  const [reviewCount, setReviewCount] = useState<number | undefined>();
 
   const [image, setImage] = useState("");
   const [badge, setBadge] = useState("");
 
   const [featured, setFeatured] = useState(false);
   const [isOffer, setIsOffer] = useState(false);
-  const [isBestSeller, setIsBestSeller] =
-    useState(false);
+  const [isBestSeller, setIsBestSeller] = useState(false);
 
   const selectedCategory = useMemo(
-    () =>
-      categories.find(
-        (item) => item.slug === category,
-      ),
+    () => categories.find((item) => item.slug === category),
     [category],
   );
 
@@ -92,11 +78,14 @@ export default function ProductForm({
     if (product) {
       setName(product.name || "");
       setBrand(product.brand || "");
-      setPrice(Number(product.price ?? 0));
+      setPrice(
+        product.price === null || product.price === undefined
+          ? undefined
+          : Number(product.price),
+      );
 
       setOriginalPrice(
-        product.originalPrice === null ||
-          product.originalPrice === undefined
+        product.originalPrice === null || product.originalPrice === undefined
           ? undefined
           : Number(product.originalPrice),
       );
@@ -105,16 +94,12 @@ export default function ProductForm({
       setSubcategory(product.subcategory || "");
       setMarketplace(product.marketplace || "");
       setAffiliateUrl(product.affiliateUrl || "");
-      setExternalProductId(product.externalProductId || "",);
-      setAvailability(product.availability || "AVAILABLE",);
+      setExternalProductId(product.externalProductId || "");
+      setAvailability(product.availability || "AVAILABLE");
       setDescription(product.description || "");
       setRating(product.rating ?? undefined);
 
-      setReviewCount(
-        product.reviewCount ??
-          product.reviews ??
-          undefined,
-      );
+      setReviewCount(product.reviewCount ?? product.reviews ?? undefined);
 
       setImage(product.image || "");
       setBadge(product.badge || "");
@@ -127,7 +112,7 @@ export default function ProductForm({
 
     setName("");
     setBrand("");
-    setPrice(0);
+    setPrice(undefined);
     setOriginalPrice(undefined);
     setCategory("");
     setSubcategory("");
@@ -150,10 +135,9 @@ export default function ProductForm({
       return;
     }
 
-    const subcategoryExists =
-      selectedCategory.subcategories.some(
-        (item) => item.slug === subcategory,
-      );
+    const subcategoryExists = selectedCategory.subcategories.some(
+      (item) => item.slug === subcategory,
+    );
 
     if (!subcategoryExists) {
       setSubcategory("");
@@ -164,6 +148,10 @@ export default function ProductForm({
     event.preventDefault();
 
     if (isSaving) return;
+
+    if (price === undefined || !Number.isFinite(price) || price < 0) {
+      return;
+    }
 
     const input: ProductCreateInput = {
       name: name.trim(),
@@ -198,9 +186,7 @@ export default function ProductForm({
     >
       <div className="border-b border-border pb-5">
         <h2 className="text-xl font-bold text-foreground sm:text-2xl">
-          {product
-            ? "Editar produto"
-            : "Cadastrar produto"}
+          {product ? "Editar produto" : "Cadastrar produto"}
         </h2>
 
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
@@ -208,10 +194,7 @@ export default function ProductForm({
         </p>
       </div>
 
-      <fieldset
-        disabled={isSaving}
-        className="space-y-6 disabled:opacity-75"
-      >
+      <fieldset disabled={isSaving} className="space-y-6 disabled:opacity-75">
         <section className="space-y-4">
           <div>
             <h3 className="font-semibold text-foreground">
@@ -235,9 +218,7 @@ export default function ProductForm({
               <Input
                 id="product-name"
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 required
               />
             </div>
@@ -253,9 +234,7 @@ export default function ProductForm({
               <Input
                 id="product-brand"
                 value={brand}
-                onChange={(event) =>
-                  setBrand(event.target.value)
-                }
+                onChange={(event) => setBrand(event.target.value)}
               />
             </div>
           </div>
@@ -279,9 +258,7 @@ export default function ProductForm({
                 value={rating ?? ""}
                 onChange={(event) =>
                   setRating(
-                    event.target.value
-                      ? Number(event.target.value)
-                      : undefined,
+                    event.target.value ? Number(event.target.value) : undefined,
                   )
                 }
               />
@@ -303,9 +280,7 @@ export default function ProductForm({
                 value={reviewCount ?? ""}
                 onChange={(event) =>
                   setReviewCount(
-                    event.target.value
-                      ? Number(event.target.value)
-                      : undefined,
+                    event.target.value ? Number(event.target.value) : undefined,
                   )
                 }
               />
@@ -315,9 +290,7 @@ export default function ProductForm({
 
         <section className="space-y-4 border-t border-border pt-6">
           <div>
-            <h3 className="font-semibold text-foreground">
-              Preço
-            </h3>
+            <h3 className="font-semibold text-foreground">Preço</h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Informe o preço atual e, se houver, o preço anterior.
@@ -339,9 +312,11 @@ export default function ProductForm({
                 min="0"
                 step="0.01"
                 inputMode="decimal"
-                value={price}
+                value={price ?? ""}
                 onChange={(event) =>
-                  setPrice(Number(event.target.value))
+                  setPrice(
+                    event.target.value ? Number(event.target.value) : undefined,
+                  )
                 }
                 required
               />
@@ -364,9 +339,7 @@ export default function ProductForm({
                 value={originalPrice ?? ""}
                 onChange={(event) =>
                   setOriginalPrice(
-                    event.target.value
-                      ? Number(event.target.value)
-                      : undefined,
+                    event.target.value ? Number(event.target.value) : undefined,
                   )
                 }
               />
@@ -376,9 +349,7 @@ export default function ProductForm({
 
         <section className="space-y-4 border-t border-border pt-6">
           <div>
-            <h3 className="font-semibold text-foreground">
-              Organização
-            </h3>
+            <h3 className="font-semibold text-foreground">Organização</h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Escolha a categoria e a subcategoria correspondentes.
@@ -397,21 +368,14 @@ export default function ProductForm({
               <select
                 id="product-category"
                 value={category}
-                onChange={(event) =>
-                  setCategory(event.target.value)
-                }
+                onChange={(event) => setCategory(event.target.value)}
                 required
                 className={selectClassName}
               >
-                <option value="">
-                  Selecione uma categoria
-                </option>
+                <option value="">Selecione uma categoria</option>
 
                 {categories.map((item) => (
-                  <option
-                    key={item.slug}
-                    value={item.slug}
-                  >
+                  <option key={item.slug} value={item.slug}>
                     {item.name}
                   </option>
                 ))}
@@ -429,26 +393,17 @@ export default function ProductForm({
               <select
                 id="product-subcategory"
                 value={subcategory}
-                onChange={(event) =>
-                  setSubcategory(event.target.value)
-                }
+                onChange={(event) => setSubcategory(event.target.value)}
                 disabled={!selectedCategory}
                 className={selectClassName}
               >
-                <option value="">
-                  Selecione uma subcategoria
-                </option>
+                <option value="">Selecione uma subcategoria</option>
 
-                {selectedCategory?.subcategories.map(
-                  (item) => (
-                    <option
-                      key={item.slug}
-                      value={item.slug}
-                    >
-                      {item.name}
-                    </option>
-                  ),
-                )}
+                {selectedCategory?.subcategories.map((item) => (
+                  <option key={item.slug} value={item.slug}>
+                    {item.name}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -456,9 +411,7 @@ export default function ProductForm({
 
         <section className="space-y-4 border-t border-border pt-6">
           <div>
-            <h3 className="font-semibold text-foreground">
-              Loja e afiliado
-            </h3>
+            <h3 className="font-semibold text-foreground">Loja e afiliado</h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Informe a loja responsável e o link de redirecionamento.
@@ -477,22 +430,16 @@ export default function ProductForm({
               <select
                 id="product-marketplace"
                 value={marketplace}
-                onChange={(event) =>
-                  setMarketplace(event.target.value)
-                }
+                onChange={(event) => setMarketplace(event.target.value)}
                 required
                 className={selectClassName}
               >
                 <option value="">Selecione</option>
                 <option value="Amazon">Amazon</option>
                 <option value="Shopee">Shopee</option>
-                <option value="Mercado Livre">
-                  Mercado Livre
-                </option>
+                <option value="Mercado Livre">Mercado Livre</option>
                 <option value="Magalu">Magalu</option>
-                <option value="AliExpress">
-                  AliExpress
-                </option>
+                <option value="AliExpress">AliExpress</option>
                 <option value="Outro">Outro</option>
               </select>
             </div>
@@ -509,75 +456,66 @@ export default function ProductForm({
                 type="url"
                 inputMode="url"
                 value={affiliateUrl}
-                onChange={(event) =>
-                  setAffiliateUrl(event.target.value)
-                }
+                onChange={(event) => setAffiliateUrl(event.target.value)}
                 placeholder="https://..."
                 required
               />
-
             </div>
             <div>
-                <label
-                  htmlFor="product-external-id"
-                  className="mb-2 block text-sm font-medium text-muted-foreground"
-                >
-                  ID do produto no marketplace
-                </label>
+              <label
+                htmlFor="product-external-id"
+                className="mb-2 block text-sm font-medium text-muted-foreground"
+              >
+                ID do produto no marketplace
+              </label>
 
-                <Input
-                  id="product-external-id"
-                  value={externalProductId}
-                  onChange={(event) => setExternalProductId(event.target.value)}
-                  placeholder="Ex.: MLB1234567890"
-                />
+              <Input
+                id="product-external-id"
+                value={externalProductId}
+                onChange={(event) => setExternalProductId(event.target.value)}
+                placeholder="Ex.: MLB1234567890"
+              />
 
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Opcional. Será utilizado futuramente para integração e
-                  atualização automática.
-                </p>
-              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Opcional. Será utilizado futuramente para integração e
+                atualização automática.
+              </p>
+            </div>
 
-              <div>
-                <label
-                  htmlFor="product-availability"
-                  className="mb-2 block text-sm font-medium text-muted-foreground"
-                >
-                  Disponibilidade *
-                </label>
+            <div>
+              <label
+                htmlFor="product-availability"
+                className="mb-2 block text-sm font-medium text-muted-foreground"
+              >
+                Disponibilidade *
+              </label>
 
-                <select
-                  id="product-availability"
-                  value={availability}
-                  onChange={(event) =>
-                    setAvailability(event.target.value as ProductAvailability)
-                  }
-                  required
-                  className={selectClassName}
-                >
-                  <option value="AVAILABLE">Disponível no marketplace</option>
+              <select
+                id="product-availability"
+                value={availability}
+                onChange={(event) =>
+                  setAvailability(event.target.value as ProductAvailability)
+                }
+                required
+                className={selectClassName}
+              >
+                <option value="AVAILABLE">Disponível no marketplace</option>
 
-                  <option value="UNAVAILABLE">
-                    Indisponível no marketplace
-                  </option>
+                <option value="UNAVAILABLE">Indisponível no marketplace</option>
 
-                  <option value="UNKNOWN">
-                    Disponibilidade não confirmada
-                  </option>
-                </select>
+                <option value="UNKNOWN">Disponibilidade não confirmada</option>
+              </select>
 
-                <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                  Selecione conforme a situação atual na loja parceira.
-                </p>
-              </div>
+              <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                Selecione conforme a situação atual na loja parceira.
+              </p>
+            </div>
           </div>
         </section>
 
         <section className="space-y-4 border-t border-border pt-6">
           <div>
-            <h3 className="font-semibold text-foreground">
-              Apresentação
-            </h3>
+            <h3 className="font-semibold text-foreground">Apresentação</h3>
 
             <p className="mt-1 text-sm text-muted-foreground">
               Defina badge, descrição e imagem do produto.
@@ -595,9 +533,7 @@ export default function ProductForm({
             <Input
               id="product-badge"
               value={badge}
-              onChange={(event) =>
-                setBadge(event.target.value)
-              }
+              onChange={(event) => setBadge(event.target.value)}
               placeholder="Ex.: Oferta, Mais vendido, Novo"
             />
           </div>
@@ -613,9 +549,7 @@ export default function ProductForm({
             <Textarea
               id="product-description"
               value={description}
-              onChange={(event) =>
-                setDescription(event.target.value)
-              }
+              onChange={(event) => setDescription(event.target.value)}
               className="min-h-32 resize-y"
             />
           </div>
@@ -625,10 +559,7 @@ export default function ProductForm({
               Imagem do produto *
             </label>
 
-            <ImageUpload
-              value={image}
-              onChange={setImage}
-            />
+            <ImageUpload value={image} onChange={setImage} />
 
             {!image && (
               <p className="mt-2 text-xs text-muted-foreground">
@@ -654,9 +585,7 @@ export default function ProductForm({
               <input
                 type="checkbox"
                 checked={featured}
-                onChange={(event) =>
-                  setFeatured(event.target.checked)
-                }
+                onChange={(event) => setFeatured(event.target.checked)}
                 className="h-4 w-4 accent-current"
               />
 
@@ -667,9 +596,7 @@ export default function ProductForm({
               <input
                 type="checkbox"
                 checked={isOffer}
-                onChange={(event) =>
-                  setIsOffer(event.target.checked)
-                }
+                onChange={(event) => setIsOffer(event.target.checked)}
                 className="h-4 w-4 accent-current"
               />
 
@@ -680,9 +607,7 @@ export default function ProductForm({
               <input
                 type="checkbox"
                 checked={isBestSeller}
-                onChange={(event) =>
-                  setIsBestSeller(event.target.checked)
-                }
+                onChange={(event) => setIsBestSeller(event.target.checked)}
                 className="h-4 w-4 accent-current"
               />
 

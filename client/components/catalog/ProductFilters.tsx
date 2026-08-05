@@ -75,21 +75,51 @@ export function ProductFilters({
             <label className="text-sm font-semibold block mb-4">
               Faixa de Preço
             </label>
+
             <input
-              type="range"
+              type="number"
               min="0"
-              max="500"
+              step="0.01"
+              inputMode="decimal"
+              aria-label="Preço mínimo"
+              placeholder="Mínimo"
+              value={filters.priceRange.min}
+              onChange={(event) =>
+                onFiltersChange({
+                  ...filters,
+                  priceRange: {
+                    ...filters.priceRange,
+                    min:
+                      event.target.value === ""
+                        ? ""
+                        : Number(event.target.value),
+                  },
+                })
+              }
+              className="w-full min-w-0 rounded-lg border border-border bg-background px-2 py-2 text-center text-sm"
+            />
+
+            <input
+              type="number"
+              min="0"
+              step="0.01"
+              inputMode="decimal"
+              aria-label="Preço máximo"
+              placeholder="Máximo"
               value={filters.priceRange.max}
               onChange={(event) =>
                 onFiltersChange({
                   ...filters,
                   priceRange: {
                     ...filters.priceRange,
-                    max: Number(event.target.value),
+                    max:
+                      event.target.value === ""
+                        ? ""
+                        : Number(event.target.value),
                   },
                 })
               }
-              className="w-full"
+              className="w-full min-w-0 rounded-lg border border-border bg-background px-2 py-2 text-center text-sm"
             />
 
             <div className="grid grid-cols-2 gap-2 mt-3 w-full">
@@ -134,7 +164,9 @@ export function ProductFilters({
           <div className="space-y-3">
             {ratingOptions.map((star) => {
               // TRAVA DE SEGURANÇA: Força o valor do filtro a virar um número limpo antes de testar o checkbox
-              const isChecked = Number(filters.minRating) > 0 && Number(filters.minRating) === star;
+              const isChecked =
+                Number(filters.minRating) > 0 &&
+                Number(filters.minRating) === star;
 
               return (
                 <label

@@ -3,8 +3,8 @@ import type { Product } from "@/types/product";
 export type ProductFilterState = {
   categories: string[];
   priceRange: {
-    min: number;
-    max: number;
+    min: number | "";
+    max: number | "";
   };
   minRating: number;
 };
@@ -14,8 +14,8 @@ export type ProductFilters = ProductFilterState;
 export const DEFAULT_PRODUCT_FILTERS: ProductFilterState = {
   categories: [],
   priceRange: {
-    min: 0,
-    max: Number.MAX_SAFE_INTEGER,
+    min: "",
+    max: "",
   },
   minRating: 0,
 };
@@ -25,8 +25,15 @@ export function filterProducts(
   filters: ProductFilterState,
   searchTerm = "",
 ): Product[] {
-  const normalizedTerm =
-    searchTerm.trim().toLowerCase();
+  const normalizedTerm = searchTerm.trim().toLowerCase();
+
+  const minimumPrice =
+    filters.priceRange.min === "" ? 0 : filters.priceRange.min;
+
+  const maximumPrice =
+    filters.priceRange.max === ""
+      ? Number.POSITIVE_INFINITY
+      : filters.priceRange.max;
 
   return products.filter((product) => {
     const price = Number(product.price ?? 0);
@@ -34,15 +41,11 @@ export function filterProducts(
     const category = product.category ?? "";
 
     const matchesCategory =
-      filters.categories.length === 0 ||
-      filters.categories.includes(category);
+      filters.categories.length === 0 || filters.categories.includes(category);
 
-    const matchesPrice =
-      price >= filters.priceRange.min &&
-      price <= filters.priceRange.max;
+    const matchesPrice = price >= minimumPrice && price <= maximumPrice;
 
-    const matchesRating =
-      rating >= filters.minRating;
+    const matchesRating = rating >= filters.minRating;
 
     const matchesSearch =
       normalizedTerm.length === 0 ||
@@ -56,21 +59,10 @@ export function filterProducts(
       ]
         .filter(
           (value): value is string =>
-            value !== null &&
-            value !== undefined &&
-            value !== "",
+            value !== null && value !== undefined && value !== "",
         )
-        .some((value) =>
-          value
-            .toLowerCase()
-            .includes(normalizedTerm),
-        );
+        .some((value) => value.toLowerCase().includes(normalizedTerm));
 
-    return (
-      matchesCategory &&
-      matchesPrice &&
-      matchesRating &&
-      matchesSearch
-    );
+    return matchesCategory && matchesPrice && matchesRating && matchesSearch;
   });
 }

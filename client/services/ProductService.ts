@@ -28,12 +28,7 @@ type ApiSubcategory = {
 
 type ApiProduct = Omit<
   Product,
-  | "price"
-  | "originalPrice"
-  | "category"
-  | "subcategory"
-  | "images"
-  | "reviews"
+  "price" | "originalPrice" | "category" | "subcategory" | "images" | "reviews"
 > & {
   price: number | string;
   originalPrice?: number | string | null;
@@ -64,11 +59,11 @@ function normalizeProduct(product: ApiProduct): Product {
       .filter(Boolean) ?? [];
 
   const mainImage =
-    product.image ??
-    normalizedImages[0] ??
-    "/images/home-image.webp";
+    product.image ?? normalizedImages[0] ?? "/images/home-image.webp";
 
   const stock = Number(product.stock ?? 0);
+  const availability =
+    product.availability ?? (stock > 0 ? "AVAILABLE" : "UNKNOWN");
 
   return {
     ...product,
@@ -76,56 +71,46 @@ function normalizeProduct(product: ApiProduct): Product {
     price: Number(product.price ?? 0),
 
     originalPrice:
-      product.originalPrice === null ||
-      product.originalPrice === undefined
+      product.originalPrice === null || product.originalPrice === undefined
         ? null
         : Number(product.originalPrice),
 
     image: mainImage,
 
-    images:
-      normalizedImages.length > 0
-        ? normalizedImages
-        : [mainImage],
+    images: normalizedImages.length > 0 ? normalizedImages : [mainImage],
 
     rating: Number(product.rating ?? 0),
 
-    reviews: Number(
-      product.reviews ??
-        product.reviewCount ??
-        0,
-    ),
+    reviews: Number(product.reviews ?? product.reviewCount ?? 0),
 
-    reviewCount: Number(
-      product.reviewCount ??
-        product.reviews ??
-        0,
-    ),
+    reviewCount: Number(product.reviewCount ?? product.reviews ?? 0),
 
     stock,
 
-    inStock: stock > 0,
+    availability,
+
+    inStock: availability !== "UNAVAILABLE",
 
     category:
       typeof product.category === "string"
         ? product.category
-        : product.category?.slug ?? null,
+        : (product.category?.slug ?? null),
 
     subcategory:
       typeof product.subcategory === "string"
         ? product.subcategory
-        : product.subcategory?.slug ?? null,
+        : (product.subcategory?.slug ?? null),
 
     categoryId:
       product.categoryId ??
       (typeof product.category === "object"
-        ? product.category?.id ?? null
+        ? (product.category?.id ?? null)
         : null),
 
     subcategoryId:
       product.subcategoryId ??
       (typeof product.subcategory === "object"
-        ? product.subcategory?.id ?? null
+        ? (product.subcategory?.id ?? null)
         : null),
   };
 }
@@ -136,10 +121,7 @@ function clearProductsCache() {
   productsRequest = null;
 }
 
-async function request<T>(
-  url: string,
-  options?: RequestInit,
-): Promise<T> {
+async function request<T>(url: string, options?: RequestInit): Promise<T> {
   const token = AuthService.getToken();
 
   const headers = new Headers(options?.headers);
@@ -162,8 +144,7 @@ async function request<T>(
   if (!response.ok) {
     let message = "Erro ao processar a solicitação.";
 
-    const contentType =
-      response.headers.get("content-type") ?? "";
+    const contentType = response.headers.get("content-type") ?? "";
 
     if (contentType.includes("application/json")) {
       try {
@@ -186,13 +167,10 @@ async function request<T>(
     return undefined as T;
   }
 
-  const contentType =
-    response.headers.get("content-type") ?? "";
+  const contentType = response.headers.get("content-type") ?? "";
 
   if (!contentType.includes("application/json")) {
-    throw new Error(
-      "A API retornou uma resposta em formato inválido.",
-    );
+    throw new Error("A API retornou uma resposta em formato inválido.");
   }
 
   return response.json() as Promise<T>;
@@ -201,8 +179,7 @@ async function request<T>(
 async function fetchAllProducts(): Promise<Product[]> {
   const products = await request<ApiProduct[]>(API_URL);
 
-  const normalizedProducts =
-    products.map(normalizeProduct);
+  const normalizedProducts = products.map(normalizeProduct);
 
   productsCache = normalizedProducts;
   productsCacheTime = Date.now();
@@ -210,27 +187,19 @@ async function fetchAllProducts(): Promise<Product[]> {
   return normalizedProducts;
 }
 
-async function deleteProduct(
-  id: string | number,
-): Promise<void> {
-  await request<void>(
-    `${API_URL}?id=${encodeURIComponent(String(id))}`,
-    {
-      method: "DELETE",
-    },
-  );
+async function deleteProduct(id: string | number): Promise<void> {
+  await request<void>(`${API_URL}/${encodeURIComponent(String(id))}`, {
+    method: "DELETE",
+  });
 
   clearProductsCache();
 }
 
 export const ProductService = {
-  async getAll(
-    options: GetAllOptions = {},
-  ): Promise<Product[]> {
+  async getAll(options: GetAllOptions = {}): Promise<Product[]> {
     const cacheIsValid =
       productsCache !== null &&
-      Date.now() - productsCacheTime <
-        PRODUCTS_CACHE_DURATION;
+      Date.now() - productsCacheTime < PRODUCTS_CACHE_DURATION;
 
     if (!options.forceRefresh && cacheIsValid) {
       return productsCache;
@@ -249,26 +218,19 @@ export const ProductService = {
     }
   },
 
-  async getById(
-    id: string | number,
-  ): Promise<Product> {
+  async getById(id: string | number): Promise<Product> {
     const product = await request<ApiProduct>(
-      `${API_URL}?id=${encodeURIComponent(String(id))}`,
+      `${API_URL}/${encodeURIComponent(String(id))}`,
     );
 
     return normalizeProduct(product);
   },
 
-  async create(
-    input: ProductCreateInput,
-  ): Promise<Product> {
-    const product = await request<ApiProduct>(
-      API_URL,
-      {
-        method: "POST",
-        body: JSON.stringify(input),
-      },
-    );
+  async create(input: ProductCreateInput): Promise<Product> {
+    const product = await request<ApiProduct>(API_URL, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
 
     clearProductsCache();
 
@@ -280,7 +242,7 @@ export const ProductService = {
     input: ProductUpdateInput,
   ): Promise<Product> {
     const product = await request<ApiProduct>(
-      `${API_URL}?id=${encodeURIComponent(String(id))}`,
+      `${API_URL}/${encodeURIComponent(String(id))}`,
       {
         method: "PUT",
         body: JSON.stringify(input),
@@ -292,15 +254,11 @@ export const ProductService = {
     return normalizeProduct(product);
   },
 
-  async delete(
-    id: string | number,
-  ): Promise<void> {
+  async delete(id: string | number): Promise<void> {
     await deleteProduct(id);
   },
 
-  async remove(
-    id: string | number,
-  ): Promise<void> {
+  async remove(id: string | number): Promise<void> {
     await deleteProduct(id);
   },
 

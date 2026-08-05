@@ -12,6 +12,9 @@ type ProductInput = {
   originalPrice?: number | string | null;
   affiliateUrl: string;
   marketplace: string;
+  externalProductId?: string | null;
+  priceCheckedAt?: string | Date | null;
+  availability?: "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN";
   image: string;
   rating?: number | string | null;
   reviewCount?: number | string | null;
@@ -37,6 +40,68 @@ function createSlug(value: string) {
 function normalizeOptionalString(value?: string | null) {
   const normalized = value?.trim();
   return normalized ? normalized : null;
+}
+
+function normalizeAvailability(
+  value?: string | null,
+): "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN" {
+  const availability = value?.trim().toUpperCase() || "UNKNOWN";
+
+  if (
+    availability !== "AVAILABLE" &&
+    availability !== "UNAVAILABLE" &&
+    availability !== "UNKNOWN"
+  ) {
+    throw new Error("Disponibilidade inválida.");
+  }
+
+  return availability;
+}
+
+function normalizePriceCheckedAt(value?: string | Date | null) {
+  if (!value) {
+    return new Date();
+  }
+
+  const date = value instanceof Date ? value : new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    throw new Error("Data de conferência do preço inválida.");
+  }
+
+  return date;
+}
+
+function normalizeNonNegativeNumber(value: number | string, fieldName: string) {
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue) || numberValue < 0) {
+    throw new Error(`${fieldName} inválido.`);
+  }
+
+  return numberValue;
+}
+
+function normalizeAffiliateUrl(value: string) {
+  const normalized = value.trim();
+
+  if (!normalized) {
+    throw new Error("Link de afiliado é obrigatório.");
+  }
+
+  try {
+    const url = new URL(normalized);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error();
+    }
+  } catch {
+    throw new Error(
+      "O link de afiliado deve ser uma URL HTTP ou HTTPS válida.",
+    );
+  }
+
+  return normalized;
 }
 
 async function resolveCategoryId(categoryIdOrSlug: string) {
@@ -83,6 +148,18 @@ async function resolveSubcategoryId(
 
 async function prepareProductData(input: ProductInput) {
   const stock = Number(input.stock ?? 0);
+  const price = normalizeNonNegativeNumber(input.price, "Preço");
+
+  const originalPrice =
+    input.originalPrice === undefined ||
+    input.originalPrice === null ||
+    input.originalPrice === ""
+      ? null
+      : normalizeNonNegativeNumber(input.originalPrice, "Preço original");
+
+  if (originalPrice !== null && originalPrice < price) {
+    throw new Error("O preço original não pode ser menor que o preço atual.");
+  }
   const categoryId = await resolveCategoryId(input.categoryId);
   const subcategoryId = await resolveSubcategoryId(
     input.subcategoryId,
@@ -94,20 +171,16 @@ async function prepareProductData(input: ProductInput) {
     slug: input.slug?.trim() || createSlug(input.name),
     description: normalizeOptionalString(input.description),
     brand: normalizeOptionalString(input.brand),
-    price: Number(input.price),
-    originalPrice:
-      input.originalPrice === undefined ||
-      input.originalPrice === null ||
-      input.originalPrice === ""
-        ? null
-        : Number(input.originalPrice),
-    affiliateUrl: input.affiliateUrl.trim(),
+    price,
+    originalPrice,
+    affiliateUrl: normalizeAffiliateUrl(input.affiliateUrl),
     marketplace: input.marketplace.trim(),
+    externalProductId: normalizeOptionalString(input.externalProductId),
+    priceCheckedAt: normalizePriceCheckedAt(input.priceCheckedAt),
+    availability: normalizeAvailability(input.availability),
     image: input.image.trim(),
     rating:
-      input.rating === undefined ||
-      input.rating === null ||
-      input.rating === ""
+      input.rating === undefined || input.rating === null || input.rating === ""
         ? 0
         : Number(input.rating),
     reviewCount:
@@ -154,46 +227,48 @@ export const ProductService = {
         input.description !== undefined
           ? input.description
           : existingProduct.description,
-      brand:
-        input.brand !== undefined
-          ? input.brand
-          : existingProduct.brand,
+      brand: input.brand !== undefined ? input.brand : existingProduct.brand,
       price: input.price ?? existingProduct.price.toString(),
       originalPrice:
         input.originalPrice !== undefined
           ? input.originalPrice
-          : existingProduct.originalPrice?.toString() ?? null,
+          : (existingProduct.originalPrice?.toString() ?? null),
       affiliateUrl: input.affiliateUrl ?? existingProduct.affiliateUrl,
       marketplace: input.marketplace ?? existingProduct.marketplace,
+      externalProductId:
+        input.externalProductId !== undefined
+          ? input.externalProductId
+          : existingProduct.externalProductId,
+      priceCheckedAt:
+        input.priceCheckedAt !== undefined
+          ? input.priceCheckedAt
+          : existingProduct.priceCheckedAt,
+      availability:
+        input.availability !== undefined
+          ? input.availability
+          : (existingProduct.availability as
+              | "AVAILABLE"
+              | "UNAVAILABLE"
+              | "UNKNOWN"),
       image: input.image ?? existingProduct.image,
       rating:
-        input.rating !== undefined
-          ? input.rating
-          : existingProduct.rating,
+        input.rating !== undefined ? input.rating : existingProduct.rating,
       reviewCount:
         input.reviewCount !== undefined
           ? input.reviewCount
           : existingProduct.reviewCount,
-      stock:
-        input.stock !== undefined
-          ? input.stock
-          : existingProduct.stock,
+      stock: input.stock !== undefined ? input.stock : existingProduct.stock,
       featured:
         input.featured !== undefined
           ? input.featured
           : existingProduct.featured,
       isOffer:
-        input.isOffer !== undefined
-          ? input.isOffer
-          : existingProduct.isOffer,
+        input.isOffer !== undefined ? input.isOffer : existingProduct.isOffer,
       isBestSeller:
         input.isBestSeller !== undefined
           ? input.isBestSeller
           : existingProduct.isBestSeller,
-      badge:
-        input.badge !== undefined
-          ? input.badge
-          : existingProduct.badge,
+      badge: input.badge !== undefined ? input.badge : existingProduct.badge,
       categoryId: input.categoryId ?? existingProduct.categoryId,
       subcategoryId:
         input.subcategoryId !== undefined

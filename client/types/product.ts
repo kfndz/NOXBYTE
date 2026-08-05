@@ -1,3 +1,8 @@
+export type ProductAvailability =
+  | "AVAILABLE"
+  | "UNAVAILABLE"
+  | "UNKNOWN";
+
 export interface Product {
   id: string | number;
 
@@ -12,6 +17,10 @@ export interface Product {
 
   affiliateUrl?: string | null;
   marketplace?: string | null;
+
+  externalProductId?: string | null;
+  priceCheckedAt?: string | null;
+  availability?: ProductAvailability;
 
   image?: string | null;
   images?: string[];
@@ -53,6 +62,10 @@ export type ProductCreateInput = {
 
   affiliateUrl?: string | null;
   marketplace?: string | null;
+
+  externalProductId?: string | null;
+  priceCheckedAt?: string | null;
+  availability?: ProductAvailability;
 
   image?: string | null;
   images?: string[];

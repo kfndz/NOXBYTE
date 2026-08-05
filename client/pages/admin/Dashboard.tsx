@@ -1,9 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import {
-  Boxes,
-  FolderTree,
-  Package,
-} from "lucide-react";
+import { CircleCheck, FolderTree, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 import AdminLayout from "../../components/admin/AdminLayout";
@@ -14,9 +10,7 @@ import type { Product } from "../../types/product";
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [products, setProducts] = useState<Product[]>(
-    [],
-  );
+  const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -64,19 +58,18 @@ export default function AdminDashboard() {
   }, [navigate]);
 
   const categoryCount = useMemo(() => {
-    return new Set(
-      products
-        .map((product) => product.category)
-        .filter(Boolean),
-    ).size;
+    return new Set(products.map((product) => product.category).filter(Boolean))
+      .size;
   }, [products]);
 
-  const totalStock = useMemo(() => {
-    return products.reduce(
-      (total, product) =>
-        total + Number(product.stock ?? 0),
-      0,
-    );
+  const availableOffersCount = useMemo(() => {
+    return products.filter((product) => {
+      const availability =
+        product.availability ??
+        (product.inStock === false ? "UNAVAILABLE" : "UNKNOWN");
+
+      return availability === "AVAILABLE";
+    }).length;
   }, [products]);
 
   const cards = [
@@ -93,10 +86,10 @@ export default function AdminDashboard() {
       icon: FolderTree,
     },
     {
-      label: "Estoque total",
-      value: totalStock,
-      description: "Unidades cadastradas",
-      icon: Boxes,
+      label: "Ofertas disponíveis",
+      value: availableOffersCount,
+      description: "Disponibilidade confirmada",
+      icon: CircleCheck,
     },
   ];
 

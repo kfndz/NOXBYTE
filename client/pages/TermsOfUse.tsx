@@ -37,12 +37,12 @@ const TermsOfUse = () => {
             </div>
 
             <div>
-              <h2 className="text-2xl font-semibold text-foreground mb-4">2. Isenção de Responsabilidade sobre Preços e Estoques</h2>
+              <h2 className="text-2xl font-semibold text-foreground mb-4">2. Embora façamos o máximo de esforço para manter as ofertas, os valores e as informações de disponibilidade atualizados:</h2>
               <p>
-                Embora façamos o máximo de esforço para manter as promoções e valores atualizados em tempo real:
+                Embora façamos o máximo de esforço para manter as ofertas, os valores e as informações de disponibilidade atualizados:
               </p>
               <ul className="list-disc pl-6 mt-3 space-y-2">
-                <li>Os preços, a disponibilidade de estoque e as condições de frete/parcelamento são determinados exclusivamente pelas lojas e podem mudar sem qualquer aviso prévio.</li>
+                <li>Os preços, a disponibilidade dos produtos e as condições de frete e parcelamento são determinados exclusivamente pelas lojas parceiras e podem mudar sem aviso prévio.</li>
                 <li>O valor válido para a compra será sempre o exigido na página de finalização do site oficial para onde você foi redirecionado. Não nos responsabilizamos por divergências de preços causadas por atualizações pendentes em nosso sistema.</li>
               </ul>
             </div>
@@ -62,7 +62,7 @@ const TermsOfUse = () => {
             <div>
               <h2 className="text-2xl font-semibold text-foreground mb-4">4. Links Externos e Compras em Plataformas Parceiras</h2>
               <p>
-                Ao clicar em "Comprar" ou em qualquer oferta listada, você sairá do ambiente da NOXBYTE.
+                Ao clicar em "Ver oferta" ou em qualquer oferta listada, você sairá do ambiente da NOXBYTE.
               </p>
               <ul className="list-disc pl-6 mt-3 space-y-2">
                 <li>Não possuímos controle, ingerência ou responsabilidade sobre as práticas, termos, políticas de privacidade, processamento de pagamentos ou suporte técnico das lojas de destino.</li>

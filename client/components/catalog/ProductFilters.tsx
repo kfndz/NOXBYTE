@@ -122,38 +122,6 @@ export function ProductFilters({
               className="w-full min-w-0 rounded-lg border border-border bg-background px-2 py-2 text-center text-sm"
             />
 
-            <div className="grid grid-cols-2 gap-2 mt-3 w-full">
-              <input
-                type="number"
-                placeholder="Min"
-                value={filters.priceRange.min}
-                onChange={(event) =>
-                  onFiltersChange({
-                    ...filters,
-                    priceRange: {
-                      ...filters.priceRange,
-                      min: Number(event.target.value) || 0,
-                    },
-                  })
-                }
-                className="w-full min-w-0 px-2 py-2 border border-border rounded-lg text-sm text-center"
-              />
-              <input
-                type="number"
-                placeholder="Max"
-                value={filters.priceRange.max}
-                onChange={(event) =>
-                  onFiltersChange({
-                    ...filters,
-                    priceRange: {
-                      ...filters.priceRange,
-                      max: Number(event.target.value) || 500,
-                    },
-                  })
-                }
-                className="w-full min-w-0 px-2 py-2 border border-border rounded-lg text-sm text-center"
-              />
-            </div>
           </div>
         )}
 

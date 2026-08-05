@@ -1,6 +1,6 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { ShoppingCart, Star } from "lucide-react";
+import { ExternalLink, Star } from "lucide-react";
 
 import type { Product } from "@/types/product";
 
@@ -22,28 +22,26 @@ function formatPrice(value?: number | string | null) {
 export const ProductCard = memo(function ProductCard({
   product,
 }: ProductCardProps) {
-  const price = Number(product.price ?? 0);
+  const availability =
+    product.availability ??
+    (product.inStock === false ? "UNAVAILABLE" : "UNKNOWN");
 
   const originalPrice =
-    product.originalPrice !== null &&
-    product.originalPrice !== undefined
+    product.originalPrice !== null && product.originalPrice !== undefined
       ? Number(product.originalPrice)
       : undefined;
 
   const discount =
-    originalPrice && originalPrice > price
+    originalPrice && originalPrice > Number(product.price)
       ? Math.round(
-          ((originalPrice - price) / originalPrice) * 100,
+          ((originalPrice - Number(product.price)) / originalPrice) * 100,
         )
       : 0;
 
   const imageUrl =
-    product.images?.find(Boolean) ??
-    product.image ??
-    "/images/home-image.webp";
+    product.images?.find(Boolean) ?? product.image ?? "/images/home-image.webp";
 
-  const reviewCount =
-    product.reviews ?? product.reviewCount ?? 0;
+  const reviewCount = product.reviews ?? product.reviewCount ?? 0;
 
   return (
     <Link
@@ -57,11 +55,18 @@ export const ProductCard = memo(function ProductCard({
           alt={product.name}
           loading="lazy"
           onError={(event) => {
-            event.currentTarget.src =
-              "/images/home-image.webp";
+            event.currentTarget.src = "/images/home-image.webp";
           }}
-          className="h-full w-full object-contain p-3 transition-transform duration-300 sm:p-4 md:group-hover:scale-105"
+          className={`h-full w-full object-contain p-3 transition-transform duration-300 sm:p-4 md:group-hover:scale-105 ${
+            availability === "UNAVAILABLE" ? "opacity-50 grayscale" : ""
+          }`}
         />
+
+        {availability === "UNAVAILABLE" && (
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-destructive px-3 py-1 text-xs font-semibold text-destructive-foreground shadow-sm">
+            Indisponível
+          </span>
+        )}
 
         {product.badge && (
           <span className="absolute right-3 top-3 z-10 max-w-[70%] truncate rounded-full bg-accent px-3 py-1 text-xs font-semibold text-white shadow-sm">
@@ -72,7 +77,7 @@ export const ProductCard = memo(function ProductCard({
         {/* Hover apenas em dispositivos com espaço e mouse */}
         <div className="absolute inset-0 hidden items-center justify-center bg-black/0 opacity-0 transition md:flex md:group-hover:bg-black/35 md:group-hover:opacity-100">
           <div className="rounded-full bg-white p-3 shadow-lg">
-            <ShoppingCart className="h-5 w-5 text-foreground" />
+            <ExternalLink className="h-5 w-5 text-foreground" />
           </div>
         </div>
       </div>
@@ -93,18 +98,16 @@ export const ProductCard = memo(function ProductCard({
             ))}
           </div>
 
-          <span className="text-xs text-muted-foreground">
-            ({reviewCount})
-          </span>
+          <span className="text-xs text-muted-foreground">({reviewCount})</span>
         </div>
 
         <div className="mt-auto">
           <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
             <span className="text-xl font-bold leading-tight text-foreground">
-              {formatPrice(price)}
+              {formatPrice(product.price)}
             </span>
 
-            {originalPrice && originalPrice > price && (
+            {originalPrice && originalPrice > Number(product.price) && (
               <span className="text-xs text-muted-foreground line-through sm:text-sm">
                 {formatPrice(originalPrice)}
               </span>
@@ -114,6 +117,18 @@ export const ProductCard = memo(function ProductCard({
           {discount > 0 && (
             <p className="mt-3 text-xs font-semibold text-accent">
               {discount}% OFF
+            </p>
+          )}
+
+          {availability === "UNKNOWN" && (
+            <p className="mt-3 text-xs font-medium text-amber-600">
+              Disponibilidade a confirmar
+            </p>
+          )}
+
+          {availability === "UNAVAILABLE" && (
+            <p className="mt-3 text-xs font-medium text-destructive">
+              Oferta indisponível no momento
             </p>
           )}
         </div>

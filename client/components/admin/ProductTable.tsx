@@ -1,10 +1,4 @@
-import {
-  Edit3,
-  Package,
-  Store,
-  Tag,
-  Trash2,
-} from "lucide-react";
+import { Edit3, Package, Store, Tag, Trash2 } from "lucide-react";
 
 import type { Product } from "@/types/product";
 
@@ -32,11 +26,34 @@ function formatLabel(value?: string | null) {
 
   return value
     .split("-")
-    .map(
-      (word) =>
-        word.charAt(0).toUpperCase() + word.slice(1),
-    )
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function getAvailabilityStatus(product: Product) {
+  const availability =
+    product.availability ??
+    (product.inStock === false ? "UNAVAILABLE" : "UNKNOWN");
+
+  switch (availability) {
+    case "AVAILABLE":
+      return {
+        label: "Disponível",
+        className: "bg-green-500/10 text-green-700 dark:text-green-400",
+      };
+
+    case "UNAVAILABLE":
+      return {
+        label: "Indisponível",
+        className: "bg-destructive/10 text-destructive",
+      };
+
+    default:
+      return {
+        label: "Não confirmada",
+        className: "bg-amber-500/10 text-amber-700 dark:text-amber-400",
+      };
+  }
 }
 
 export default function ProductTable({
@@ -68,13 +85,11 @@ export default function ProductTable({
           <Package className="h-7 w-7 text-accent" />
         </div>
 
-        <h2 className="text-xl font-semibold">
-          Nenhum produto cadastrado
-        </h2>
+        <h2 className="text-xl font-semibold">Nenhum produto cadastrado</h2>
 
         <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
-          Use o botão “Adicionar produto” para inserir o primeiro
-          item do catálogo.
+          Use o botão “Adicionar produto” para inserir o primeiro item do
+          catálogo.
         </p>
       </div>
     );
@@ -85,8 +100,9 @@ export default function ProductTable({
       {/* Cards para celular e tablet */}
       <div className="grid grid-cols-1 gap-4 lg:hidden">
         {products.map((product) => {
-          const isDeleting =
-            String(deletingId) === String(product.id);
+          const isDeleting = String(deletingId) === String(product.id);
+
+          const availabilityStatus = getAvailabilityStatus(product);
 
           const imageUrl =
             product.image ??
@@ -104,8 +120,7 @@ export default function ProductTable({
                     src={imageUrl}
                     alt={product.name}
                     onError={(event) => {
-                      event.currentTarget.src =
-                        "/images/home-image.webp";
+                      event.currentTarget.src = "/images/home-image.webp";
                     }}
                     className="h-full w-full object-contain p-2"
                   />
@@ -124,9 +139,11 @@ export default function ProductTable({
                     {formatPrice(product.price)}
                   </p>
 
-                  <p className="mt-1 truncate text-sm text-muted-foreground">
-                    Estoque: {Number(product.stock ?? 0)}
-                  </p>
+                  <span
+                    className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${availabilityStatus.className}`}
+                  >
+                    {availabilityStatus.label}
+                  </span>
                 </div>
               </div>
 
@@ -150,9 +167,7 @@ export default function ProductTable({
                 <div className="flex min-w-0 items-center gap-2">
                   <Store className="h-4 w-4 flex-shrink-0 text-accent" />
 
-                  <span className="truncate">
-                    {product.marketplace ?? "-"}
-                  </span>
+                  <span className="truncate">{product.marketplace ?? "-"}</span>
                 </div>
               </div>
 
@@ -209,7 +224,7 @@ export default function ProductTable({
                 </th>
 
                 <th className="px-5 py-4 text-left text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-                  Estoque
+                  Disponibilidade
                 </th>
 
                 <th className="px-5 py-4 text-right text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
@@ -220,9 +235,9 @@ export default function ProductTable({
 
             <tbody className="divide-y divide-border">
               {products.map((product) => {
-                const isDeleting =
-                  String(deletingId) ===
-                  String(product.id);
+                const isDeleting = String(deletingId) === String(product.id);
+
+                const availabilityStatus = getAvailabilityStatus(product);
 
                 const imageUrl =
                   product.image ??
@@ -277,7 +292,11 @@ export default function ProductTable({
                     </td>
 
                     <td className="px-5 py-4 text-sm">
-                      {Number(product.stock ?? 0)}
+                      <span
+                        className={`inline-flex whitespace-nowrap rounded-full px-2.5 py-1 text-xs font-semibold ${availabilityStatus.className}`}
+                      >
+                        {availabilityStatus.label}
+                      </span>
                     </td>
 
                     <td className="px-5 py-4">
@@ -294,16 +313,12 @@ export default function ProductTable({
 
                         <button
                           type="button"
-                          onClick={() =>
-                            onDelete(product.id)
-                          }
+                          onClick={() => onDelete(product.id)}
                           disabled={isDeleting}
                           className="inline-flex items-center gap-2 rounded-xl bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <Trash2 className="h-4 w-4" />
-                          {isDeleting
-                            ? "Excluindo..."
-                            : "Excluir"}
+                          {isDeleting ? "Excluindo..." : "Excluir"}
                         </button>
                       </div>
                     </td>

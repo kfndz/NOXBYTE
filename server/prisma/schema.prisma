@@ -54,8 +54,8 @@ model Product {
   affiliateUrl      String
   marketplace       String
   externalProductId String?
-  priceCheckedAt    DateTime     @default(now())
-  availability      String       @default("AVAILABLE")
+  priceCheckedAt    DateTime?
+  availability      String       @default("UNKNOWN")
   image             String
   rating            Float?
   reviewCount       Int?

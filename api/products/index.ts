@@ -20,8 +20,9 @@ function normalizeOptionalString(value: unknown) {
 function normalizeAvailability(
   value: unknown,
 ): "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN" {
-  const availability =
-    String(value ?? "AVAILABLE").trim().toUpperCase();
+  const availability = String(value ?? "UNKNOWN")
+    .trim()
+    .toUpperCase();
 
   if (
     availability !== "AVAILABLE" &&
@@ -46,6 +47,38 @@ function normalizePriceCheckedAt(value: unknown) {
   }
 
   return date;
+}
+
+function normalizeNonNegativeNumber(value: unknown, fieldName: string) {
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue) || numberValue < 0) {
+    throw new Error(`${fieldName} inválido.`);
+  }
+
+  return numberValue;
+}
+
+function normalizeAffiliateUrl(value: unknown) {
+  const normalized = String(value ?? "").trim();
+
+  if (!normalized) {
+    throw new Error("Link de afiliado é obrigatório.");
+  }
+
+  try {
+    const url = new URL(normalized);
+
+    if (url.protocol !== "http:" && url.protocol !== "https:") {
+      throw new Error();
+    }
+  } catch {
+    throw new Error(
+      "O link de afiliado deve ser uma URL HTTP ou HTTPS válida.",
+    );
+  }
+
+  return normalized;
 }
 
 async function findProduct(idOrSlug: string) {
@@ -110,9 +143,30 @@ async function prepareProductData(body: any, existingProduct?: any) {
 
   if (!name) throw new Error("Nome do produto é obrigatório.");
 
-  const affiliateUrl = String(
-    body.affiliateUrl ?? existingProduct?.affiliateUrl ?? "",
-  ).trim();
+  const price = normalizeNonNegativeNumber(
+    body.price ?? existingProduct?.price ?? 0,
+    "Preço",
+  );
+
+  const originalPriceInput =
+    body.originalPrice !== undefined
+      ? body.originalPrice
+      : existingProduct?.originalPrice;
+
+  const originalPrice =
+    originalPriceInput === undefined ||
+    originalPriceInput === null ||
+    originalPriceInput === ""
+      ? null
+      : normalizeNonNegativeNumber(originalPriceInput, "Preço original");
+
+  if (originalPrice !== null && originalPrice < price) {
+    throw new Error("O preço original não pode ser menor que o preço atual.");
+  }
+
+  const affiliateUrl = normalizeAffiliateUrl(
+    body.affiliateUrl ?? existingProduct?.affiliateUrl,
+  );
 
   const marketplace = String(
     body.marketplace ?? existingProduct?.marketplace ?? "",
@@ -120,61 +174,55 @@ async function prepareProductData(body: any, existingProduct?: any) {
 
   const image = String(body.image ?? existingProduct?.image ?? "").trim();
 
-  if (!affiliateUrl) throw new Error("Link de afiliado é obrigatório.");
   if (!marketplace) throw new Error("Marketplace é obrigatório.");
   if (!image) throw new Error("Imagem é obrigatória.");
 
   return {
     name,
-    slug: String(body.slug ?? existingProduct?.slug ?? "").trim() || createSlug(name),
+    slug:
+      String(body.slug ?? existingProduct?.slug ?? "").trim() ||
+      createSlug(name),
     description:
       body.description !== undefined
         ? body.description
           ? String(body.description).trim()
           : null
-        : existingProduct?.description ?? null,
+        : (existingProduct?.description ?? null),
     brand:
       body.brand !== undefined
         ? body.brand
           ? String(body.brand).trim()
           : null
-        : existingProduct?.brand ?? null,
-    price: Number(body.price ?? existingProduct?.price ?? 0),
-    originalPrice:
-      body.originalPrice !== undefined
-        ? body.originalPrice === null || body.originalPrice === ""
-          ? null
-          : Number(body.originalPrice)
-        : existingProduct?.originalPrice ?? null,
-        affiliateUrl,
+        : (existingProduct?.brand ?? null),
+    price,
+    originalPrice,
+    affiliateUrl,
     marketplace,
     externalProductId:
       body.externalProductId !== undefined
         ? normalizeOptionalString(body.externalProductId)
-        : existingProduct?.externalProductId ?? null,
+        : (existingProduct?.externalProductId ?? null),
     priceCheckedAt:
       body.priceCheckedAt !== undefined
         ? normalizePriceCheckedAt(body.priceCheckedAt)
-        : existingProduct?.priceCheckedAt ?? new Date(),
+        : (existingProduct?.priceCheckedAt ?? new Date()),
     availability:
       body.availability !== undefined
         ? normalizeAvailability(body.availability)
-        : normalizeAvailability(
-            existingProduct?.availability ?? "AVAILABLE",
-          ),
+        : normalizeAvailability(existingProduct?.availability ?? "UNKNOWN"),
     image,
     rating:
       body.rating !== undefined
         ? body.rating === null || body.rating === ""
           ? 0
           : Number(body.rating)
-        : existingProduct?.rating ?? 0,
+        : (existingProduct?.rating ?? 0),
     reviewCount:
       body.reviewCount !== undefined
         ? body.reviewCount === null || body.reviewCount === ""
           ? 0
           : Number(body.reviewCount)
-        : existingProduct?.reviewCount ?? 0,
+        : (existingProduct?.reviewCount ?? 0),
     stock: Number(body.stock ?? existingProduct?.stock ?? 0),
     featured:
       body.featured !== undefined
@@ -193,7 +241,7 @@ async function prepareProductData(body: any, existingProduct?: any) {
         ? body.badge
           ? String(body.badge).trim()
           : null
-        : existingProduct?.badge ?? null,
+        : (existingProduct?.badge ?? null),
     categoryId,
     subcategoryId,
   };
@@ -209,10 +257,7 @@ function getIdFromQuery(req: VercelRequest) {
   return raw ? String(raw) : "";
 }
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
     const id = getIdFromQuery(req);
 

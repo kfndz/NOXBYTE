@@ -6,7 +6,7 @@ import { sortProducts } from "./productSorting";
 
 const products: Product[] = [
   {
-    id: 1,
+    id: "prod-001",
     name: "Produto A",
     price: 100,
     originalPrice: 150,
@@ -18,7 +18,7 @@ const products: Product[] = [
     badge: "Bestseller",
   },
   {
-    id: 2,
+    id: "prod-002",
     name: "Produto B",
     price: 250,
     originalPrice: 300,
@@ -29,7 +29,7 @@ const products: Product[] = [
     featured: false,
   },
   {
-    id: 3,
+    id: "prod-003",
     name: "Produto C",
     price: 50,
     originalPrice: 80,

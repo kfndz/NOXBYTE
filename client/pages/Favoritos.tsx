@@ -34,7 +34,7 @@ export default function Favoritos() {
 
   const items = useMemo(() => {
     return (products ?? []).filter((product) =>
-      favoriteIds.includes(String(product.id)),
+      favoriteIds.includes(product.id),
     );
   }, [favoriteIds, products]);
 

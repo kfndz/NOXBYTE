@@ -24,9 +24,7 @@ export default function AdminProducts() {
   const [loading, setLoading] = useState(true);
   const [loadingProduct, setLoadingProduct] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [deletingId, setDeletingId] = useState<
-    string | number | null
-  >(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
@@ -176,7 +174,7 @@ export default function AdminProducts() {
     }
   }
 
-  async function handleDelete(id: string | number) {
+  async function handleDelete(id: string) {
     const confirmed = window.confirm(
       "Tem certeza de que deseja excluir este produto? Essa ação não poderá ser desfeita.",
     );

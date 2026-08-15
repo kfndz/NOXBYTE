@@ -32,3 +32,7 @@ dist-ssr
 !.env.example
 
 /backup-produtos-*.json
+ACESSO_ADMIN_LOCALHOST.md
+ETAPA_3_CONCLUSAO.md
+VALIDATION_CHECKLIST.md
+TEST_FLOW.md

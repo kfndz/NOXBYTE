@@ -16,29 +16,26 @@ export const FavoriteService = {
     }
   },
 
-  isFavorite(productId: string | number): boolean {
-    return this.getAll().includes(String(productId));
+  isFavorite(productId: string): boolean {
+    return this.getAll().includes(productId);
   },
 
-  add(productId: string | number) {
+  add(productId: string) {
     const favorites = this.getAll();
-    const id = String(productId);
 
-    if (!favorites.includes(id)) {
+    if (!favorites.includes(productId)) {
       localStorage.setItem(
         FAVORITES_KEY,
-        JSON.stringify([...favorites, id]),
+        JSON.stringify([...favorites, productId]),
       );
 
       notifyFavoritesUpdated();
     }
   },
 
-  remove(productId: string | number) {
-    const id = String(productId);
-
+  remove(productId: string) {
     const favorites = this.getAll().filter(
-      (item) => item !== id,
+      (item) => item !== productId,
     );
 
     localStorage.setItem(
@@ -49,7 +46,7 @@ export const FavoriteService = {
     notifyFavoritesUpdated();
   },
 
-  toggle(productId: string | number) {
+  toggle(productId: string) {
     if (this.isFavorite(productId)) {
       this.remove(productId);
 

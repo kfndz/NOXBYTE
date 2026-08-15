@@ -90,8 +90,16 @@ export default function ProductForm({
           : Number(product.originalPrice),
       );
 
-      setCategory(product.category || "");
-      setSubcategory(product.subcategory || "");
+      // Garantir que categoria é sempre string (slug)
+      // O produto normalizado já vem com category como string (slug)
+      const categoryValue = product.category || "";
+      setCategory(categoryValue);
+
+      // Garantir que subcategoria é sempre string (slug)
+      // O produto normalizado já vem com subcategory como string (slug)
+      const subcategoryValue = product.subcategory || "";
+      setSubcategory(subcategoryValue);
+
       setMarketplace(product.marketplace || "");
       setAffiliateUrl(product.affiliateUrl || "");
       setExternalProductId(product.externalProductId || "");

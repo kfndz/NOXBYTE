@@ -4,7 +4,7 @@ export type ProductAvailability =
   | "UNKNOWN";
 
 export interface Product {
-  id: string | number;
+  id: string;
 
   name: string;
   slug?: string;

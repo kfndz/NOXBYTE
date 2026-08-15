@@ -21,6 +21,8 @@
     "typecheck": "tsc",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
+    "db:seed": "tsx server/prisma/seed.ts",
+    "db:seed-admin": "tsx server/prisma/seed-admin.ts",
     "prisma:generate": "prisma generate --schema=server/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema=server/prisma/schema.prisma",
     "prisma:seed": "tsx server/prisma/seed.ts",

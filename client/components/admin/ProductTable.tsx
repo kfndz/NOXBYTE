@@ -5,9 +5,9 @@ import type { Product } from "@/types/product";
 type Props = {
   products: Product[];
   loading?: boolean;
-  deletingId?: string | number | null;
+  deletingId?: string | null;
   onEdit: (product: Product) => void;
-  onDelete: (id: string | number) => void;
+  onDelete: (id: string) => void;
 };
 
 function formatPrice(value?: number | string | null) {
@@ -100,7 +100,7 @@ export default function ProductTable({
       {/* Cards para celular e tablet */}
       <div className="grid grid-cols-1 gap-4 lg:hidden">
         {products.map((product) => {
-          const isDeleting = String(deletingId) === String(product.id);
+          const isDeleting = deletingId === product.id;
 
           const availabilityStatus = getAvailabilityStatus(product);
 
@@ -235,7 +235,7 @@ export default function ProductTable({
 
             <tbody className="divide-y divide-border">
               {products.map((product) => {
-                const isDeleting = String(deletingId) === String(product.id);
+                const isDeleting = deletingId === product.id;
 
                 const availabilityStatus = getAvailabilityStatus(product);
 
@@ -269,7 +269,7 @@ export default function ProductTable({
                           </p>
 
                           <p className="mt-1 text-xs text-muted-foreground">
-                            ID: {String(product.id).slice(0, 8)}
+                            ID: {product.id.slice(0, 8)}
                           </p>
                         </div>
                       </div>

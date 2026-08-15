@@ -46,6 +46,22 @@ type GetAllOptions = {
   forceRefresh?: boolean;
 };
 
+function extractCategorySlug(
+  category: ApiCategory | string | null | undefined,
+): string | null {
+  if (!category) return null;
+  if (typeof category === "string") return category;
+  return category.slug ?? null;
+}
+
+function extractSubcategorySlug(
+  subcategory: ApiSubcategory | string | null | undefined,
+): string | null {
+  if (!subcategory) return null;
+  if (typeof subcategory === "string") return subcategory;
+  return subcategory.slug ?? null;
+}
+
 function normalizeProduct(product: ApiProduct): Product {
   const normalizedImages =
     product.images
@@ -64,6 +80,9 @@ function normalizeProduct(product: ApiProduct): Product {
   const stock = Number(product.stock ?? 0);
   const availability =
     product.availability ?? (stock > 0 ? "AVAILABLE" : "UNKNOWN");
+
+  const categorySlug = extractCategorySlug(product.category);
+  const subcategorySlug = extractSubcategorySlug(product.subcategory);
 
   return {
     ...product,
@@ -91,15 +110,9 @@ function normalizeProduct(product: ApiProduct): Product {
 
     inStock: availability !== "UNAVAILABLE",
 
-    category:
-      typeof product.category === "string"
-        ? product.category
-        : (product.category?.slug ?? null),
+    category: categorySlug,
 
-    subcategory:
-      typeof product.subcategory === "string"
-        ? product.subcategory
-        : (product.subcategory?.slug ?? null),
+    subcategory: subcategorySlug,
 
     categoryId:
       product.categoryId ??
@@ -187,8 +200,8 @@ async function fetchAllProducts(): Promise<Product[]> {
   return normalizedProducts;
 }
 
-async function deleteProduct(id: string | number): Promise<void> {
-  await request<void>(`${API_URL}/${encodeURIComponent(String(id))}`, {
+async function deleteProduct(id: string): Promise<void> {
+  await request<void>(`${API_URL}/${encodeURIComponent(id)}`, {
     method: "DELETE",
   });
 
@@ -218,9 +231,9 @@ export const ProductService = {
     }
   },
 
-  async getById(id: string | number): Promise<Product> {
+  async getById(id: string): Promise<Product> {
     const product = await request<ApiProduct>(
-      `${API_URL}/${encodeURIComponent(String(id))}`,
+      `${API_URL}/${encodeURIComponent(id)}`,
     );
 
     return normalizeProduct(product);
@@ -238,11 +251,11 @@ export const ProductService = {
   },
 
   async update(
-    id: string | number,
+    id: string,
     input: ProductUpdateInput,
   ): Promise<Product> {
     const product = await request<ApiProduct>(
-      `${API_URL}/${encodeURIComponent(String(id))}`,
+      `${API_URL}/${encodeURIComponent(id)}`,
       {
         method: "PUT",
         body: JSON.stringify(input),
@@ -254,11 +267,11 @@ export const ProductService = {
     return normalizeProduct(product);
   },
 
-  async delete(id: string | number): Promise<void> {
+  async delete(id: string): Promise<void> {
     await deleteProduct(id);
   },
 
-  async remove(id: string | number): Promise<void> {
+  async remove(id: string): Promise<void> {
     await deleteProduct(id);
   },
 

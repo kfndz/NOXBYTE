@@ -19,22 +19,25 @@ function runCommand(args) {
   return result.status ?? 1;
 }
 
-if (branchKind !== "feature" && branchKind !== "main") {
+if (branchKind === "main") {
+  console.warn(
+    `Skipping database migrations because FUSION_BRANCH_KIND is ${branchKind}`,
+  );
+  process.exit(0);
+}
+
+if (branchKind !== "feature") {
   console.warn(
     `Skipping database migrations because FUSION_BRANCH_KIND is ${branchKind ?? "unset"}`,
   );
-
-  const seedExitCode = runCommand(["exec", "tsx", "server/prisma/seed.ts"]);
-  process.exit(seedExitCode);
+  process.exit(0);
 }
 
 if (!process.env.DATABASE_URL_UNPOOLED) {
   console.warn(
     "Skipping database migrations because DATABASE_URL_UNPOOLED is not set",
   );
-
-  const seedExitCode = runCommand(["exec", "tsx", "server/prisma/seed.ts"]);
-  process.exit(seedExitCode);
+  process.exit(0);
 }
 
 const migrationExitCode = runCommand(["run", "db:migrate"]);

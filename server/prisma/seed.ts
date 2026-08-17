@@ -1,5 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 
+if (process.env.NODE_ENV === "production") {
+  console.warn("Seed de categorias bloqueado em produção.");
+  process.exit(0);
+}
+
 const prisma = new PrismaClient();
 
 const categories = [

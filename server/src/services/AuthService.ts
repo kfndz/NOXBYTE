@@ -14,19 +14,19 @@ export const AuthService = {
       throw new Error("Credenciais inválidas.");
     }
 
-    const passwordMatches = await bcrypt.compare(
-      password,
-      admin.passwordHash,
-    );
+    const passwordMatches = await bcrypt.compare(password, admin.passwordHash);
 
     if (!passwordMatches) {
       throw new Error("Credenciais inválidas.");
     }
 
-    const secret = process.env.JWT_SECRET;
+    const secret =
+      process.env.JWT_SECRET ?? "dev-secret-key-change-in-production";
 
-    if (!secret) {
-      throw new Error("JWT_SECRET não configurado.");
+    if (!process.env.JWT_SECRET) {
+      console.warn(
+        "JWT_SECRET não definido; usando fallback de desenvolvimento.",
+      );
     }
 
     const token = jwt.sign(

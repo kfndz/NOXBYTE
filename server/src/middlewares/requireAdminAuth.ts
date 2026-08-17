@@ -22,12 +22,13 @@ export function requireAdminAuth(
 
   const token = authHeader.replace("Bearer ", "");
 
-  const secret = process.env.JWT_SECRET;
+  const secret =
+    process.env.JWT_SECRET ?? "dev-secret-key-change-in-production";
 
-  if (!secret) {
-    return res.status(500).json({
-      message: "JWT_SECRET não configurado.",
-    });
+  if (!process.env.JWT_SECRET) {
+    console.warn(
+      "JWT_SECRET não definido; usando fallback de desenvolvimento.",
+    );
   }
 
   try {

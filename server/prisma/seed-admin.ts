@@ -2,6 +2,11 @@ import "dotenv/config";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+if (process.env.NODE_ENV === "production") {
+  console.warn("Seed de admin bloqueado em produção.");
+  process.exit(0);
+}
+
 const prisma = new PrismaClient();
 
 async function main() {

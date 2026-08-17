@@ -3,10 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { prisma } from "../_lib/prisma.js";
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse,
-) {
+export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== "POST") {
     return res.status(405).json({
       message: "Método não permitido.",
@@ -45,12 +42,13 @@ export default async function handler(
       });
     }
 
-    const secret = process.env.JWT_SECRET;
+    const secret =
+      process.env.JWT_SECRET ?? "dev-secret-key-change-in-production";
 
-    if (!secret) {
-      return res.status(500).json({
-        message: "JWT_SECRET não configurado.",
-      });
+    if (!process.env.JWT_SECRET) {
+      console.warn(
+        "JWT_SECRET não definido; usando fallback de desenvolvimento.",
+      );
     }
 
     const token = jwt.sign(

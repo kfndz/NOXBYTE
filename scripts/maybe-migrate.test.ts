@@ -42,6 +42,11 @@ function createFixture() {
     `#!/usr/bin/env node\nimport { writeFileSync } from "node:fs";\nwriteFileSync("${join(dir, "migration-invoked").split("\\").join("\\\\")}", process.argv.slice(2).join(" "));\n`,
     { mode: 0o755 },
   );
+  writeFileSync(
+    join(dir, "node_modules/.bin/tsx"),
+    `#!/usr/bin/env node\nimport { writeFileSync } from "node:fs";\nwriteFileSync("${join(dir, "seed-invoked").split("\\").join("\\\\")}", process.argv.slice(2).join(" "));\n`,
+    { mode: 0o755 },
+  );
   return dir;
 }
 
@@ -84,6 +89,7 @@ describe("maybe-migrate", () => {
     expect(() =>
       readFileSync(join(cwd, "migration-invoked"), "utf8"),
     ).toThrow();
+    expect(() => readFileSync(join(cwd, "seed-invoked"), "utf8")).toThrow();
   });
 
   it("does not run drizzle migrations for unexpected branch kinds", () => {

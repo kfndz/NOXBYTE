@@ -77,7 +77,7 @@ export function createApp() {
 
   app.put("/api/products/:id", requireAdminAuth, async (req, res) => {
     try {
-      const product = await ProductService.update(req.params.id, req.body);
+      const product = await ProductService.update(String(req.params.id), req.body);
 
       if (!product) {
         return res.status(404).json({
@@ -100,7 +100,7 @@ export function createApp() {
 
   app.delete("/api/products/:id", requireAdminAuth, async (req, res) => {
     try {
-      const product = await ProductService.delete(req.params.id);
+      const product = await ProductService.delete(String(req.params.id));
 
       if (!product) {
         return res.status(404).json({

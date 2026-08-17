@@ -74,8 +74,6 @@ export const ProductController = {
 
       await ProductService.remove(id);
 
-      await ProductService.remove(id);
-
       return res.status(200).json({
         message: "Produto removido com sucesso.",
       });

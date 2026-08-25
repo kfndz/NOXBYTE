@@ -128,28 +128,37 @@ export const categories: Category[] = [
     description: "Roupas, calçados, bolsas e acessórios para todos os estilos",
     icon: Shirt,
     subcategories: [
-      {
-        id: "moda-feminina",
-        name: "Moda Feminina",
-        slug: "moda-feminina",
-      },
-      {
-        id: "moda-masculina",
-        name: "Moda Masculina",
-        slug: "moda-masculina",
-      },
-      { id: "calcados", name: "Calçados", slug: "calcados" },
-      {
-        id: "bolsas-carteiras",
-        name: "Bolsas & Carteiras",
-        slug: "bolsas-carteiras",
-      },
-      {
-        id: "relogios-joias",
-        name: "Relógios & Joias",
-        slug: "relogios-joias",
-      },
-    ],
+  {
+    id: "roupas",
+    name: "Roupas",
+    slug: "roupas",
+  },
+  {
+    id: "calcados",
+    name: "Calçados",
+    slug: "calcados",
+  },
+  {
+    id: "bolsas-carteiras",
+    name: "Bolsas & Carteiras",
+    slug: "bolsas-carteiras",
+  },
+  {
+    id: "meias-underwear",
+    name: "Meias & Underwear",
+    slug: "meias-underwear",
+  },
+  {
+    id: "relogios-joias",
+    name: "Relógios & Joias",
+    slug: "relogios-joias",
+  },
+  {
+    id: "acessorios-moda",
+    name: "Acessórios",
+    slug: "acessorios-moda",
+  },
+],
   },
   {
     id: "saude-beleza",
@@ -313,6 +322,40 @@ export const categories: Category[] = [
       },
     ],
   },
+  {
+  id: "alimentos-bebidas",
+  name: "Alimentos & Bebidas",
+  slug: "alimentos-bebidas",
+  description: "Alimentos, bebidas e produtos para sua despensa",
+  icon: Utensils,
+  subcategories: [
+    {
+      id: "alimentos",
+      name: "Alimentos",
+      slug: "alimentos",
+    },
+    {
+      id: "bebidas",
+      name: "Bebidas",
+      slug: "bebidas",
+    },
+    {
+      id: "doces-sobremesas",
+      name: "Doces & Sobremesas",
+      slug: "doces-sobremesas",
+    },
+    {
+      id: "mercearia",
+      name: "Mercearia",
+      slug: "mercearia",
+    },
+    {
+      id: "cafe-chas",
+      name: "Café & Chás",
+      slug: "cafe-chas",
+    },
+  ],
+}
 ];
 
 export function getCategoryBySlug(slug: string): Category | undefined {

@@ -50,25 +50,25 @@ describe("product catalog utilities", () => {
     });
 
     expect(result).toHaveLength(1);
-    expect(result[0]?.id).toBe(1);
+    expect(result[0]?.id).toBe("prod-001");
   });
 
   it("sorts products by price and rating", () => {
     const asc = sortProducts([...products], "menor-preco");
-    expect(asc[0]?.id).toBe(3);
+    expect(asc[0]?.id).toBe("prod-003");
 
     const desc = sortProducts([...products], "maior-preco");
-    expect(desc[0]?.id).toBe(2);
+    expect(desc[0]?.id).toBe("prod-002");
   });
 
   it("paginates a product list", () => {
     const firstPage = paginateProducts(products, 2, 1);
     expect(firstPage.items).toHaveLength(2);
     expect(firstPage.totalPages).toBe(2);
-    expect(firstPage.items[0]?.id).toBe(1);
+    expect(firstPage.items[0]?.id).toBe("prod-001");
 
     const secondPage = paginateProducts(products, 2, 2);
     expect(secondPage.items).toHaveLength(1);
-    expect(secondPage.items[0]?.id).toBe(3);
+    expect(secondPage.items[0]?.id).toBe("prod-003");
   });
 });

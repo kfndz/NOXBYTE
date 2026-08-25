@@ -45,7 +45,7 @@ export function filterProducts(
 
     const matchesPrice = price >= minimumPrice && price <= maximumPrice;
 
-    const matchesRating = rating >= filters.minRating;
+    const matchesRating = filters.minRating === 0 || Math.floor(rating) === filters.minRating;
 
     const matchesSearch =
       normalizedTerm.length === 0 ||

@@ -503,7 +503,7 @@ export default function ProductForm({
 
                 <option value="UNAVAILABLE">Indisponível no marketplace</option>
 
-                <option value="UNKNOWN">Disponibilidade não confirmada</option>
+                <option value="AVAILABLE">Disponibilidade não confirmada</option>
               </select>
 
               <p className="mt-2 text-xs leading-5 text-muted-foreground">

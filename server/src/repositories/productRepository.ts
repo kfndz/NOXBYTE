@@ -7,6 +7,23 @@ const productRelations = {
   subcategory: true,
 };
 
+// Trata os dados de disponibilidade e estoque para o modelo de afiliados
+function sanitizeProductData(data: any) {
+  const sanitized = { ...data };
+
+  // Força a disponibilidade como AVAILABLE se vier vazia, indefinida ou UNKNOWN
+  if (!sanitized.availability || sanitized.availability === "UNKNOWN") {
+    sanitized.availability = "AVAILABLE";
+  }
+
+  // Força estoque positivo para a vitrine não travar a compra
+  if (sanitized.stock === undefined || sanitized.stock === null || sanitized.stock <= 0) {
+    sanitized.stock = 999;
+  }
+
+  return sanitized;
+}
+
 export const ProductRepository = {
   async findAll() {
     return prisma.product.findMany({
@@ -27,8 +44,10 @@ export const ProductRepository = {
   },
 
   async create(data: any) {
+    const payload = sanitizeProductData(data);
+
     return prisma.product.create({
-      data,
+      data: payload,
       include: productRelations,
     });
   },
@@ -40,11 +59,13 @@ export const ProductRepository = {
       return null;
     }
 
+    const payload = sanitizeProductData(data);
+
     return prisma.product.update({
       where: {
         id: product.id,
       },
-      data,
+      data: payload,
       include: productRelations,
     });
   },

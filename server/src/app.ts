@@ -3,6 +3,7 @@ import cors from "cors";
 import { ProductService } from "./services/ProductService.js";
 import { authRoutes } from "./routes/authRoutes.js";
 import { requireAdminAuth } from "./middlewares/requireAdminAuth.js";
+import categoryRoutes from "./routes/categories.js";
 
 export function createApp() {
   const app = express();
@@ -23,6 +24,7 @@ export function createApp() {
   );
 
   app.use("/api/auth", authRoutes);
+  app.use("/api/categories", categoryRoutes);
 
   app.get("/api/products", async (_req, res) => {
     try {

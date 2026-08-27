@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   ArrowUpDown,
   ChevronDown,
@@ -12,10 +12,7 @@ import { Pagination } from "@/components/catalog/Pagination";
 import { ProductFilters } from "@/components/catalog/ProductFilters";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { useProducts } from "@/hooks/useProducts";
-import {
-  getCategoryBySlug,
-  getSubcategoryBySlug,
-} from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import {
   DEFAULT_PRODUCT_FILTERS,
   filterProducts,
@@ -28,31 +25,70 @@ import {
 
 const Category = () => {
   const { category, subcategory } = useParams();
-  const { products, loading } = useProducts();
+  const { products, loading: productsLoading } = useProducts();
+
+  const {
+    categories,
+    loading: categoriesLoading,
+  } = useCategories();
 
   const [sortBy, setSortBy] =
     useState<ProductSortOption>("relevancia");
+
   const [filters, setFilters] = useState(
     DEFAULT_PRODUCT_FILTERS,
   );
+
   const [currentPage, setCurrentPage] = useState(1);
+
   const [showMobileFilters, setShowMobileFilters] =
     useState(false);
 
-  const categoryData = getCategoryBySlug(category ?? "");
+  const [productsPerPage, setProductsPerPage] = useState(() =>
+    typeof window !== "undefined" && window.innerWidth >= 1024
+      ? 12
+      : 8,
+  );
+
+  const productsSectionRef = useRef<HTMLDivElement>(null);
+
+  const categoryData = categories.find(
+    (item) => item.slug === category,
+  );
 
   const currentSubcategory = subcategory
-    ? getSubcategoryBySlug(category ?? "", subcategory)
+    ? categoryData?.subcategories.find(
+      (item) => item.slug === subcategory,
+    )
     : undefined;
+
+  const loading = productsLoading || categoriesLoading;
 
   const hasValidRoute =
     Boolean(categoryData) &&
     (!subcategory || Boolean(currentSubcategory));
 
   useEffect(() => {
-    setCurrentPage(1);
-    setShowMobileFilters(false);
-  }, [category, subcategory]);
+    const handleResize = () => {
+      const newProductsPerPage =
+        window.innerWidth >= 1024 ? 12 : 8;
+
+      setProductsPerPage((current) => {
+        if (current !== newProductsPerPage) {
+          setCurrentPage(1);
+          return newProductsPerPage;
+        }
+
+        return current;
+      });
+    };
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+    };
+  }, []);
 
   const filteredProducts = useMemo(() => {
     if (!hasValidRoute) {
@@ -88,10 +124,21 @@ const Category = () => {
   const paginatedProducts = useMemo(() => {
     return paginateProducts(
       filteredProducts,
-      8,
+      productsPerPage,
       currentPage,
     );
-  }, [currentPage, filteredProducts]);
+  }, [currentPage, filteredProducts, productsPerPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+
+    requestAnimationFrame(() => {
+      productsSectionRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    });
+  };
 
   const breadcrumbItems = [
     {
@@ -107,11 +154,11 @@ const Category = () => {
     },
     ...(subcategory && currentSubcategory
       ? [
-          {
-            label: currentSubcategory.name,
-            current: true,
-          },
-        ]
+        {
+          label: currentSubcategory.name,
+          current: true,
+        },
+      ]
       : []),
   ];
 
@@ -129,7 +176,7 @@ const Category = () => {
             {currentSubcategory?.name
               ? `${categoryData?.name ?? "Categoria"} • ${currentSubcategory.name}`
               : categoryData?.description ??
-                "Produtos selecionados para você"}
+              "Produtos selecionados para você"}
           </p>
         </div>
       </section>
@@ -153,16 +200,14 @@ const Category = () => {
                 </span>
 
                 <ChevronDown
-                  className={`h-5 w-5 transition-transform ${
-                    showMobileFilters ? "rotate-180" : ""
-                  }`}
+                  className={`h-5 w-5 transition-transform ${showMobileFilters ? "rotate-180" : ""
+                    }`}
                 />
               </button>
 
               <div
-                className={`${
-                  showMobileFilters ? "block" : "hidden"
-                } lg:block`}
+                className={`${showMobileFilters ? "block" : "hidden"
+                  } lg:block`}
               >
                 <ProductFilters
                   filters={filters}
@@ -182,7 +227,10 @@ const Category = () => {
             </aside>
 
             {/* Produtos */}
-            <div className="min-w-0 lg:col-span-3">
+            <div
+              ref={productsSectionRef}
+              className="min-w-0 lg:col-span-3"
+            >
               <div className="mb-6 flex flex-col gap-4 border-b border-border pb-5 sm:flex-row sm:items-center sm:justify-between md:mb-8 md:pb-6">
                 <span className="text-sm text-muted-foreground">
                   {loading
@@ -264,7 +312,7 @@ const Category = () => {
                   <Pagination
                     currentPage={currentPage}
                     totalPages={paginatedProducts.totalPages}
-                    onPageChange={setCurrentPage}
+                    onPageChange={handlePageChange}
                   />
                 </>
               )}

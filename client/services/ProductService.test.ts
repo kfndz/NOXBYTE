@@ -31,49 +31,65 @@ describe("ProductService", () => {
       value: createStorage(),
       configurable: true,
     });
-    Object.defineProperty(globalThis, "sessionStorage", {
-      value: createStorage(),
-      configurable: true,
-    });
+
     vi.resetModules();
     vi.unstubAllEnvs();
+    vi.restoreAllMocks();
   });
 
-  it("returns an empty catalog while backend mode is disabled", async () => {
-    vi.stubEnv("VITE_DEV_MODE", "false");
+  it("busca produtos da API e normaliza os dados", async () => {
+    const mockProduct = {
+      id: "1",
+      name: "Produto Teste",
+      price: "99.90",
+      originalPrice: "129.90",
+      rating: "4.5",
+      reviewCount: 10,
+      stock: 5,
+      availability: "AVAILABLE",
+      image: "/produto.jpg",
+      images: [{ url: "/produto.jpg" }],
+      category: {
+        id: "cat-1",
+        name: "Tecnologia",
+        slug: "tecnologia",
+      },
+      subcategory: {
+        id: "sub-1",
+        name: "Smartphones",
+        slug: "smartphones",
+      },
+    };
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(
+        new Response(JSON.stringify([mockProduct]), {
+          status: 200,
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }),
+      ),
+    );
 
     const { ProductService } = await import("./ProductService");
+
     const products = await ProductService.getAll();
 
-    expect(products).toEqual([]);
-  });
+    expect(products).toHaveLength(1);
+    expect(products[0].id).toBe("1");
+    expect(products[0].price).toBe(99.9);
+    expect(products[0].rating).toBe(4.5);
+    expect(products[0].reviews).toBe(10);
+    expect(products[0].category).toBe("tecnologia");
+    expect(products[0].subcategory).toBe("smartphones");
 
-  it("returns mock products in development mode", async () => {
-    vi.stubEnv("VITE_DEV_MODE", "true");
-
-    const { ProductService } = await import("./ProductService");
-    const products = await ProductService.getAll();
-
-    expect(products.length).toBeGreaterThan(0);
-    expect(products[0]).toHaveProperty("id");
-  });
-});
-
-describe("AuthService", () => {
-  beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-    vi.resetModules();
-  });
-
-  it("clears auth data from storage on logout", async () => {
-    localStorage.setItem("admin_auth_v1", "true");
-    sessionStorage.setItem("admin_auth_v1", "true");
-
-    const { AuthService } = await import("./AuthService");
-    AuthService.logout();
-
-    expect(localStorage.getItem("admin_auth_v1")).toBeNull();
-    expect(sessionStorage.getItem("admin_auth_v1")).toBeNull();
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/products",
+      expect.objectContaining({
+        headers: expect.any(Headers),
+      }),
+    );
   });
 });

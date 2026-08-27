@@ -1,14 +1,53 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
-import { categories, type Category } from "@/lib/categories";
+import {
+  Baby,
+  ChevronDown,
+  Dumbbell,
+  Gamepad2,
+  Heart,
+  Home,
+  PawPrint,
+  Settings,
+  Shirt,
+  Smartphone,
+  Utensils,
+  Zap,
+} from "lucide-react";
+import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
 
+const categoryIcons = {
+  tecnologia: Smartphone,
+  games: Gamepad2,
+  casa: Home,
+  eletrodomesticos: Zap,
+  "moda-acessorios": Shirt,
+  "saude-beleza": Heart,
+  "esporte-fitness": Dumbbell,
+  utilidades: Utensils,
+  automotivo: Settings,
+  "pet-shop": PawPrint,
+  "bebes-criancas": Baby,
+  "alimentos-bebidas": Utensils,
+};
+
 export function CategoryDropdown() {
-  const [activeCategory, setActiveCategory] = useState<Category | null>(
-    categories[0] || null
+  const { categories, loading } = useCategories();
+
+  const [activeCategorySlug, setActiveCategorySlug] = useState<string | null>(
+    null,
   );
   const [isOpen, setIsOpen] = useState(false);
+
+  const activeCategory =
+    categories.find((category) => category.slug === activeCategorySlug) ??
+    categories[0] ??
+    null;
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div
@@ -38,16 +77,19 @@ export function CategoryDropdown() {
           {/* Categories List */}
           <div className="w-48 border-r border-border">
             {categories.map((category) => {
-              const Icon = category.icon;
+              const Icon =
+                categoryIcons[
+                category.slug as keyof typeof categoryIcons
+                ] ?? Settings;
               return (
                 <button
                   key={category.id}
-                  onMouseEnter={() => setActiveCategory(category)}
+                  onMouseEnter={() => setActiveCategorySlug(category.slug)}
                   className={cn(
                     "w-full px-4 py-3 text-sm text-left flex items-center gap-3 transition-colors",
                     "hover:bg-muted",
-                    activeCategory?.id === category.id &&
-                      "bg-accent/10 text-accent font-medium"
+                    activeCategory?.slug === category.slug &&
+                    "bg-accent/10 text-accent font-medium"
                   )}
                 >
                   <Icon className="w-4 h-4 flex-shrink-0" />

@@ -13,10 +13,10 @@ import {
 import { Footer } from "@/components/Footer";
 import { Header } from "@/components/Header";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
-import { getCategoryBySlug, getSubcategoryBySlug } from "@/lib/categories";
 import { FavoriteService } from "@/services/FavoriteService";
 import { ProductService } from "@/services/ProductService";
 import type { Product as ProductType } from "@/types/product";
+import { useCategories } from "@/hooks/useCategories";
 
 function formatPrice(value?: number | string | null) {
   const numberValue = Number(value ?? 0);
@@ -55,6 +55,10 @@ const Product = () => {
   const [selectedImage, setSelectedImage] = useState(0);
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const {
+  categories,
+  loading: categoriesLoading,
+} = useCategories();
 
   useEffect(() => {
     let isMounted = true;
@@ -130,7 +134,7 @@ const Product = () => {
     return ["/images/home-image.webp"];
   }, [productData]);
 
-  if (loading) {
+  if (loading || categoriesLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <p className="text-muted-foreground">Carregando produto...</p>
@@ -170,12 +174,14 @@ const Product = () => {
   const subcategorySlug = productData.subcategory ?? undefined;
 
   const categoryData = categorySlug
-    ? getCategoryBySlug(categorySlug)
+    ? categories.find((category) => category.slug === categorySlug)
     : undefined;
 
   const subcategoryData =
-    categorySlug && subcategorySlug
-      ? getSubcategoryBySlug(categorySlug, subcategorySlug)
+    categoryData && subcategorySlug
+      ? categoryData.subcategories.find(
+        (subcategory) => subcategory.slug === subcategorySlug,
+      )
       : undefined;
 
   const categoryName = categoryData?.name ?? categorySlug ?? "Catálogo";
@@ -204,7 +210,7 @@ const Product = () => {
 
   const originalPrice =
     productData.originalPrice !== null &&
-    productData.originalPrice !== undefined
+      productData.originalPrice !== undefined
       ? Number(productData.originalPrice)
       : undefined;
 
@@ -294,11 +300,10 @@ const Product = () => {
                         type="button"
                         onClick={() => setSelectedImage(index)}
                         aria-label={`Selecionar imagem ${index + 1}`}
-                        className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${
-                          selectedImage === index
+                        className={`aspect-square overflow-hidden rounded-lg border-2 transition-colors ${selectedImage === index
                             ? "border-accent"
                             : "border-border hover:border-muted-foreground"
-                        }`}
+                          }`}
                       >
                         <img
                           src={img}
@@ -398,20 +403,18 @@ const Product = () => {
                     }
                     target="_blank"
                     rel="noopener noreferrer sponsored"
-                    className={`flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl px-5 py-4 text-center font-semibold text-white transition-all active:scale-[0.98] ${
-                      isAvailable
+                    className={`flex min-h-14 flex-1 items-center justify-center gap-2 rounded-xl px-5 py-4 text-center font-semibold text-white transition-all active:scale-[0.98] ${isAvailable
                         ? "bg-accent hover:bg-accent/90"
                         : "pointer-events-none bg-muted-foreground/50"
-                    }`}
+                      }`}
                     aria-disabled={!isAvailable}
                   >
                     <ShoppingCart className="h-5 w-5 flex-shrink-0" />
 
                     <span>
                       {isAvailable
-                        ? `Ver oferta na ${
-                            productData.marketplace ?? "loja parceira"
-                          }`
+                        ? `Ver oferta na ${productData.marketplace ?? "loja parceira"
+                        }`
                         : "Oferta indisponível"}
                     </span>
                   </a>
@@ -428,16 +431,14 @@ const Product = () => {
                         ? "Remover dos favoritos"
                         : "Adicionar aos favoritos"
                     }
-                    className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 px-5 py-4 font-semibold transition-colors sm:w-14 sm:px-0 ${
-                      isWishlisted
+                    className={`flex min-h-14 items-center justify-center gap-2 rounded-xl border-2 px-5 py-4 font-semibold transition-colors sm:w-14 sm:px-0 ${isWishlisted
                         ? "border-accent bg-accent/10 text-accent"
                         : "border-border text-foreground hover:border-accent"
-                    }`}
+                      }`}
                   >
                     <Heart
-                      className={`h-5 w-5 ${
-                        isWishlisted ? "fill-current" : ""
-                      }`}
+                      className={`h-5 w-5 ${isWishlisted ? "fill-current" : ""
+                        }`}
                     />
 
                     <span className="sm:hidden">
@@ -520,9 +521,8 @@ const Product = () => {
                     {specifications.map(([key, value], index) => (
                       <div
                         key={key}
-                        className={`p-4 ${
-                          index % 2 === 1 ? "bg-muted/30" : ""
-                        }`}
+                        className={`p-4 ${index % 2 === 1 ? "bg-muted/30" : ""
+                          }`}
                       >
                         <p className="text-sm font-semibold text-muted-foreground">
                           {key}

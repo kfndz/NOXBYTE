@@ -364,8 +364,10 @@ async function main() {
       create: category,
     });
 
+    const currentSubcategoryIds: string[] = [];
+
     for (const subcategory of subcategories) {
-      await prisma.subcategory.upsert({
+      const savedSubcategory = await prisma.subcategory.upsert({
         where: {
           categoryId_slug: {
             categoryId: savedCategory.id,
@@ -381,10 +383,55 @@ async function main() {
           categoryId: savedCategory.id,
         },
       });
+
+      currentSubcategoryIds.push(savedSubcategory.id);
+    }
+
+    // Remove todas as subcategorias que não estão mais definidas no seed
+    const obsoleteSubcategories = await prisma.subcategory.findMany({
+      where: {
+        categoryId: savedCategory.id,
+        id: {
+          notIn: currentSubcategoryIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+
+    for (const subcategory of obsoleteSubcategories) {
+      console.log(
+        `Removendo subcategoria antiga: ${subcategory.name}`,
+      );
+
+      // Remove a associação dos produtos
+      await prisma.product.updateMany({
+        where: {
+          subcategoryId: subcategory.id,
+        },
+        data: {
+          subcategoryId: null,
+        },
+      });
+
+      // Exclui a subcategoria antiga
+      await prisma.subcategory.delete({
+        where: {
+          id: subcategory.id,
+        },
+      });
+
+      console.log(
+        `✓ Subcategoria antiga removida: ${subcategory.name}`,
+      );
     }
   }
 
-  // 2. Associa os produtos existentes às subcategorias
+  console.log("Categorias e subcategorias sincronizadas.");
+
+  // Associa os produtos existentes às subcategorias
   console.log("Associando produtos às subcategorias...");
 
   for (const mapping of productSubcategoryMap) {

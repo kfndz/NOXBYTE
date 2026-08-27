@@ -1,16 +1,52 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { ChevronDown } from "lucide-react";
-import { categories } from "@/lib/categories";
+import {
+  Baby,
+  ChevronDown,
+  Dumbbell,
+  Gamepad2,
+  Heart,
+  Home,
+  PawPrint,
+  Settings,
+  Shirt,
+  Smartphone,
+  Utensils,
+  Zap,
+} from "lucide-react";
+
+import { useCategories } from "@/hooks/useCategories";
 import { cn } from "@/lib/utils";
+
+const categoryIcons = {
+  tecnologia: Smartphone,
+  games: Gamepad2,
+  casa: Home,
+  eletrodomesticos: Zap,
+  "moda-acessorios": Shirt,
+  "saude-beleza": Heart,
+  "esporte-fitness": Dumbbell,
+  utilidades: Utensils,
+  automotivo: Settings,
+  "pet-shop": PawPrint,
+  "bebes-criancas": Baby,
+  "alimentos-bebidas": Utensils,
+};
 
 export function CategoryAccordion() {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
+  const { categories, loading } = useCategories();
+
+  if (loading) {
+    return null;
+  }
 
   return (
     <div className="space-y-1">
       {categories.map((category) => {
-        const Icon = category.icon;
+        const Icon = categoryIcons[
+          category.slug as keyof typeof categoryIcons
+        ] ?? Settings;
         const isExpanded = expandedCategory === category.id;
 
         return (

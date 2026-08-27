@@ -7,7 +7,7 @@ import { CategoryPageLayout } from "@/components/catalog/CategoryPageLayout";
 import { ProductFilters } from "@/components/catalog/ProductFilters";
 import { ProductGrid } from "@/components/catalog/ProductGrid";
 import { useProducts } from "@/hooks/useProducts";
-import { getCategoryBySlug } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 import {
   DEFAULT_PRODUCT_FILTERS,
   filterProducts,
@@ -16,6 +16,7 @@ import { sortProducts, type ProductSortOption } from "@/utils/productSorting";
 
 const Catalog = () => {
   const { products, loading, error } = useProducts();
+  const { categories } = useCategories();
   const { search } = useLocation();
 
   const query = useMemo(() => {
@@ -43,7 +44,9 @@ const Catalog = () => {
     );
 
     return categorySlugs.map((category) => {
-      const registeredCategory = getCategoryBySlug(category);
+      const registeredCategory = categories.find(
+        (item) => item.slug === category,
+      );
 
       const formattedName =
         registeredCategory?.name ??
@@ -56,7 +59,7 @@ const Catalog = () => {
         name: formattedName,
       };
     });
-  }, [products]);
+  }, [categories, products]);
 
   function clearFiltersAndSearch() {
     setFilters(DEFAULT_PRODUCT_FILTERS);

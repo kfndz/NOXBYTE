@@ -17,7 +17,7 @@ import { ProductCard } from "@/components/catalog/ProductCard";
 import { SectionHeader } from "@/components/catalog/SectionHeader";
 import { useProducts } from "@/hooks/useProducts";
 import { sortProducts } from "@/utils/productSorting";
-import { categories as allCategories } from "@/lib/categories";
+import { useCategories } from "@/hooks/useCategories";
 
 const carouselImages = [
   {
@@ -59,22 +59,7 @@ const featuredCategorySlugs = [
   "pet-shop",
 ];
 
-const categories = featuredCategorySlugs.flatMap((slug) => {
-  const category = allCategories.find((item) => item.slug === slug);
 
-  if (!category) {
-    return [];
-  }
-
-  return [
-    {
-      name: category.name,
-      slug: category.slug,
-      description: category.description,
-      image: categoryImages[category.slug] ?? "/images/home-image.webp",
-    },
-  ];
-});
 
 const faqs = [
   {
@@ -111,9 +96,27 @@ const faqs = [
 
 const Index = () => {
   const { products, loading, error } = useProducts();
+  const { categories: allCategories } = useCategories();
 
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
+
+  const categories = featuredCategorySlugs.flatMap((slug) => {
+    const category = allCategories.find((item) => item.slug === slug);
+
+    if (!category) {
+      return [];
+    }
+
+    return [
+      {
+        name: category.name,
+        slug: category.slug,
+        description: category.description,
+        image: categoryImages[category.slug] ?? "/images/home-image.webp",
+      },
+    ];
+  });
 
   const bestSellers = sortProducts(
     products.filter((product) => product.isBestSeller),
@@ -196,11 +199,10 @@ const Index = () => {
                   {carouselImages.map((image, index) => (
                     <div
                       key={image.src}
-                      className={`absolute inset-0 transition-opacity duration-1000 ${
-                        index === currentSlide
-                          ? "z-10 opacity-100"
-                          : "z-0 opacity-0"
-                      }`}
+                      className={`absolute inset-0 transition-opacity duration-1000 ${index === currentSlide
+                        ? "z-10 opacity-100"
+                        : "z-0 opacity-0"
+                        }`}
                       aria-hidden={index !== currentSlide}
                     >
                       <img
@@ -239,11 +241,10 @@ const Index = () => {
                         aria-current={
                           index === currentSlide ? "true" : undefined
                         }
-                        className={`h-2 rounded-full transition-all ${
-                          index === currentSlide
-                            ? "w-6 bg-accent"
-                            : "w-2 bg-background/70"
-                        }`}
+                        className={`h-2 rounded-full transition-all ${index === currentSlide
+                          ? "w-6 bg-accent"
+                          : "w-2 bg-background/70"
+                          }`}
                       />
                     ))}
                   </div>
@@ -512,9 +513,8 @@ const Index = () => {
 
                         <ChevronDown
                           aria-hidden="true"
-                          className={`h-5 w-5 flex-shrink-0 transition-transform ${
-                            expanded ? "rotate-180" : ""
-                          }`}
+                          className={`h-5 w-5 flex-shrink-0 transition-transform ${expanded ? "rotate-180" : ""
+                            }`}
                         />
                       </button>
                     </h3>

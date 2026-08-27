@@ -84,7 +84,7 @@ export default function AdminLayout({
           </p>
 
           <h2 className="mt-3 text-2xl font-semibold text-foreground">
-            NOXBYTE
+            MP VERTISE
           </h2>
         </div>
 

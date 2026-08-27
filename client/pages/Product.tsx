@@ -398,28 +398,7 @@ const Product = () => {
                       </div>
                     )}
                 </div>
-
-                {/* Estoque */}
-                <div className="mb-8 rounded-xl bg-muted/30 p-4">
-                  <p className="flex flex-wrap gap-x-2 gap-y-1 text-sm">
-                    {isInStock ? (
-                      <>
-                        <span className="font-semibold text-green-600">
-                          ✓ Em Estoque
-                        </span>
-
-                        <span className="text-muted-foreground">
-                          ({stock} unidades disponíveis)
-                        </span>
-                      </>
-                    ) : (
-                      <span className="font-semibold text-destructive">
-                        ✗ Fora de Estoque
-                      </span>
-                    )}
-                  </p>
-                </div>
-
+                
                 {/* Quantidade */}
                 {isInStock && (
                   <div className="mb-8">

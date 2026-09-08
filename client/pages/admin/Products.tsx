@@ -25,6 +25,9 @@ export default function AdminProducts() {
   const [loadingProduct, setLoadingProduct] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  
+  // 1. ESTADO DE SINCRONIZAÇÃO ADICIONADO AQUI:
+  const [syncingId, setSyncingId] = useState<string | null>(null);
 
   const [feedback, setFeedback] = useState("");
   const [error, setError] = useState("");
@@ -202,6 +205,32 @@ export default function AdminProducts() {
     }
   }
 
+  // 2. FUNÇÃO DE SINCRONIZAÇÃO ADICIONADA AQUI:
+  async function handleSync(product: Product) {
+    try {
+      setSyncingId(product.id);
+      setError("");
+      setFeedback("");
+
+      const updatedProduct = await ProductService.syncProduct(product.id);
+
+      // Atualiza o produto sincronizado dentro da lista local mantendo os dados atualizados
+      setProducts((prev) =>
+        prev.map((item) => (item.id === updatedProduct.id ? updatedProduct : item)),
+      );
+
+      setFeedback(`Produto '${product.name}' sincronizado com sucesso.`);
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Não foi possível sincronizar o produto com o marketplace.",
+      );
+    } finally {
+      setSyncingId(null);
+    }
+  }
+
   return (
     <AdminLayout title="Produtos">
       <div className="flex flex-col gap-4 rounded-3xl border border-border bg-card p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-6">
@@ -259,12 +288,15 @@ export default function AdminProducts() {
         />
       )}
 
+      {/* 3. PROPS ADICIONADAS AO PRODUCT TABLE AQUI: */}
       <ProductTable
         products={products}
         loading={loading}
         deletingId={deletingId}
+        syncingId={syncingId}
         onEdit={handleEdit}
         onDelete={handleDelete}
+        onSync={handleSync}
       />
     </AdminLayout>
   );

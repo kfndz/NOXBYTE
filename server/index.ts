@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import { handleDemo } from "./routes/demo.js";
 import { createApp } from "./src/app.js";
+import productsRouter from "./routes/products.js"; // Adicionada extensão .js
 
 export function createServer() {
   const app = express();
@@ -28,6 +29,9 @@ export function createServer() {
   });
 
   app.get("/api/demo", handleDemo);
+
+  // Rota para operações de produtos (incluindo sincronização /api/products/:id/sync)
+  app.use("/api/products", productsRouter);
 
   const modularApp = createApp();
 

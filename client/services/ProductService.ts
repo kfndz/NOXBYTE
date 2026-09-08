@@ -278,4 +278,27 @@ export const ProductService = {
   clearCache() {
     clearProductsCache();
   },
+
+  async syncProduct(id: string): Promise<Product> {
+    const token = localStorage.getItem("admin_token"); // ou a forma utilizada de recuperar o token do admin
+
+    const response = await fetch(`/api/products/${id}/sync`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || "Erro ao sincronizar produto com o marketplace.",
+      );
+    }
+
+    const data = await response.json();
+    return data.product;
+  },
+
 };

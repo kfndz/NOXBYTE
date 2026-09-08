@@ -1,87 +1,38 @@
 import { Request, Response } from "express";
 import { ProductService } from "../services/ProductService.js";
+import { priceSyncService } from "../services/PriceSyncService.js";
 
 export const ProductController = {
-  async getAll(req: Request, res: Response) {
-    try {
-      const products = await ProductService.getAll();
+  // ... métodos existentes (getAll, getById, create, update, remove) ...
 
-      return res.status(200).json(products);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        message: "Erro ao buscar produtos.",
-      });
-    }
-  },
-
-  async getById(req: Request, res: Response) {
+  async sync(req: Request, res: Response) {
     try {
       const id = Array.isArray(req.params.id)
         ? req.params.id[0]
         : req.params.id;
 
-      const product = await ProductService.getById(id);
+      if (!id) {
+        return res.status(400).json({
+          message: "ID do produto não informado.",
+        });
+      }
 
-      return res.status(200).json(product);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(404).json({
-        message: "Produto não encontrado.",
-      });
-    }
-  },
-
-  async create(req: Request, res: Response) {
-    try {
-      const product = await ProductService.create(req.body);
-
-      return res.status(201).json(product);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        message: "Erro ao cadastrar produto.",
-      });
-    }
-  },
-
-  async update(req: Request, res: Response) {
-    try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
-
-      const product = await ProductService.update(id, req.body);
-
-      return res.status(200).json(product);
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        message: "Erro ao atualizar produto.",
-      });
-    }
-  },
-
-  async remove(req: Request, res: Response) {
-    try {
-      const id = Array.isArray(req.params.id)
-        ? req.params.id[0]
-        : req.params.id;
-
-      await ProductService.remove(id);
+      const updatedProduct = await priceSyncService.syncProductById(id);
 
       return res.status(200).json({
-        message: "Produto removido com sucesso.",
+        message: "Produto sincronizado com sucesso.",
+        product: updatedProduct,
       });
     } catch (error) {
-      console.error(error);
+      console.error("Erro na sincronização manual do produto:", error);
 
-      return res.status(500).json({
-        message: "Erro ao remover produto.",
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : "Erro desconhecido ao sincronizar produto.";
+
+      return res.status(400).json({
+        message: errorMessage,
       });
     }
   },

@@ -1,4 +1,4 @@
-import { Edit3, Package, Store, Tag, Trash2 } from "lucide-react";
+import { Edit3, Package, RefreshCw, Store, Tag, Trash2 } from "lucide-react";
 
 import type { Product } from "@/types/product";
 
@@ -6,8 +6,10 @@ type Props = {
   products: Product[];
   loading?: boolean;
   deletingId?: string | null;
+  syncingId?: string | null;
   onEdit: (product: Product) => void;
   onDelete: (id: string) => void;
+  onSync?: (product: Product) => void;
 };
 
 function formatPrice(value?: number | string | null) {
@@ -60,8 +62,10 @@ export default function ProductTable({
   products,
   loading = false,
   deletingId = null,
+  syncingId = null,
   onEdit,
   onDelete,
+  onSync,
 }: Props) {
   if (loading) {
     return (
@@ -101,6 +105,7 @@ export default function ProductTable({
       <div className="grid grid-cols-1 gap-4 lg:hidden">
         {products.map((product) => {
           const isDeleting = deletingId === product.id;
+          const isSyncing = syncingId === product.id;
 
           const availabilityStatus = getAvailabilityStatus(product);
 
@@ -172,10 +177,22 @@ export default function ProductTable({
               </div>
 
               <div className="flex flex-col gap-2 border-t border-border p-4 sm:flex-row sm:justify-end sm:p-5">
+                {onSync && (
+                  <button
+                    type="button"
+                    onClick={() => onSync(product)}
+                    disabled={isDeleting || isSyncing}
+                    className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+                    {isSyncing ? "Sincronizando..." : "Sincronizar"}
+                  </button>
+                )}
+
                 <button
                   type="button"
                   onClick={() => onEdit(product)}
-                  disabled={isDeleting}
+                  disabled={isDeleting || isSyncing}
                   className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-accent/30 bg-accent/10 px-4 py-2 text-sm font-semibold text-accent transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   <Edit3 className="h-4 w-4" />
@@ -185,7 +202,7 @@ export default function ProductTable({
                 <button
                   type="button"
                   onClick={() => onDelete(product.id)}
-                  disabled={isDeleting}
+                  disabled={isDeleting || isSyncing}
                   className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                 >
                   <Trash2 className="h-4 w-4" />
@@ -236,6 +253,7 @@ export default function ProductTable({
             <tbody className="divide-y divide-border">
               {products.map((product) => {
                 const isDeleting = deletingId === product.id;
+                const isSyncing = syncingId === product.id;
 
                 const availabilityStatus = getAvailabilityStatus(product);
 
@@ -301,10 +319,23 @@ export default function ProductTable({
 
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
+                        {onSync && (
+                          <button
+                            type="button"
+                            onClick={() => onSync(product)}
+                            disabled={isDeleting || isSyncing}
+                            className="inline-flex items-center gap-2 rounded-xl bg-primary/10 px-3 py-2 text-sm font-medium text-primary transition hover:bg-primary/20 disabled:cursor-not-allowed disabled:opacity-60"
+                            title="Sincronizar preço e estoque com o marketplace"
+                          >
+                            <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+                            {isSyncing ? "Sincronizando..." : "Sincronizar"}
+                          </button>
+                        )}
+
                         <button
                           type="button"
                           onClick={() => onEdit(product)}
-                          disabled={isDeleting}
+                          disabled={isDeleting || isSyncing}
                           className="inline-flex items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <Edit3 className="h-4 w-4" />
@@ -314,7 +345,7 @@ export default function ProductTable({
                         <button
                           type="button"
                           onClick={() => onDelete(product.id)}
-                          disabled={isDeleting}
+                          disabled={isDeleting || isSyncing}
                           className="inline-flex items-center gap-2 rounded-xl bg-destructive px-3 py-2 text-sm font-medium text-destructive-foreground transition hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           <Trash2 className="h-4 w-4" />

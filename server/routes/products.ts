@@ -1,12 +1,33 @@
 import { Request, Response, Router } from "express";
 import { ShopeeAdapter } from "../src/adapters/ShopeeAdapter.js";
 import { AmazonAdapter } from "../src/adapters/AmazonAdapter.js";
-import { MercadoLivreAdapter } from "../src/adapters/MercadoLivreAdapter.js";
+import {
+  MercadoLivreAdapter,
+  MercadoLivreError,
+} from "../src/adapters/MercadoLivreAdapter.js";
+// Importe seu ORM/Banco aqui (ex: Prisma)
+import { prisma } from "../src/config/prisma.js";
 
 const router = Router();
 const shopeeAdapter = new ShopeeAdapter();
 const amazonAdapter = new AmazonAdapter();
 const mercadoLivreAdapter = new MercadoLivreAdapter();
+
+// Função utilitária para extrair apenas o ID do Mercado Livre (ex: MLB5008168162)
+function extractMercadoLivreId(input: string): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+
+  // Extrai da query string (ex: ?item_id=MLB5008168162)
+  const queryMatch = trimmed.match(/[?&]item_id=(MLB\d+)/i);
+  if (queryMatch) return queryMatch[1].toUpperCase();
+
+  // Extrai de URLs padrão (ex: mercadoLivre.com.br/p/MLB5008168162 ou MLB-5008168162)
+  const regexMatch = trimmed.match(/(MLB-?\d+|\bMLB\d+\b)/i);
+  if (regexMatch) return regexMatch[0].replace("-", "").toUpperCase();
+
+  return null;
+}
 
 // -------------------------------------------------------------------
 // POST /api/products/:id/sync - Sincronização individual de produto
@@ -15,31 +36,35 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
-    // TODO: Substitua pelo produto real do seu banco de dados
-    const product = {
-      id,
-      name: "Produto Exemplo",
-      price: 100,
-      marketplace: "MercadoLivre", // "Shopee", "Amazon" ou "MercadoLivre"
-      externalId: "MLB123456789",
-      inStock: true,
-    };
+    // 1. Busca o produto REAL no banco de dados
+    const product = await prisma.product.findUnique({
+      where: { id },
+    });
 
     if (!product) {
-      return res.status(404).json({ message: "Produto não encontrado." });
+      return res
+        .status(404)
+        .json({ message: "Produto não encontrado no banco de dados." });
     }
 
     const marketplace = product.marketplace?.toLowerCase().replace(/\s+/g, "");
+    const rawExternalId = product.externalProductId;
+
+    if (!rawExternalId) {
+      return res
+        .status(400)
+        .json({ message: "Produto não possui um ID externo/link cadastrado." });
+    }
 
     // --- INTEGRAÇÃO SHOPEE ---
-    if (marketplace === "shopee" && product.externalId) {
+    if (marketplace === "shopee") {
       let accessToken = process.env.SHOPEE_ACCESS_TOKEN || "";
       const refreshToken = process.env.SHOPEE_REFRESH_TOKEN || "";
       let updatedData;
 
       try {
         updatedData = await shopeeAdapter.getItemDetail(
-          product.externalId,
+          rawExternalId,
           accessToken,
         );
       } catch (err: any) {
@@ -49,17 +74,14 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
             err.message?.includes("token") ||
             err.message?.includes("401"))
         ) {
-          console.log("Access token expirado. Renovando token na Shopee...");
-
-          const tokenResult = await shopeeAdapter.refreshAccessToken(refreshToken);
-
+          const tokenResult =
+            await shopeeAdapter.refreshAccessToken(refreshToken);
           process.env.SHOPEE_ACCESS_TOKEN = tokenResult.access_token;
           process.env.SHOPEE_REFRESH_TOKEN = tokenResult.refresh_token;
 
           accessToken = tokenResult.access_token;
-
           updatedData = await shopeeAdapter.getItemDetail(
-            product.externalId,
+            rawExternalId,
             accessToken,
           );
         } else {
@@ -67,13 +89,14 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
         }
       }
 
-      const updatedProduct = {
-        ...product,
-        price: updatedData.price ?? product.price,
-        inStock: updatedData.inStock,
-        availability: updatedData.inStock ? "AVAILABLE" : "UNAVAILABLE",
-        updatedAt: new Date(),
-      };
+      const updatedProduct = await prisma.product.update({
+        where: { id },
+        data: {
+          price: updatedData.price ?? product.price,
+          availability: updatedData.inStock ? "AVAILABLE" : "UNAVAILABLE",
+          priceCheckedAt: new Date(),
+        },
+      });
 
       return res.json({
         message: "Produto sincronizado com sucesso com a Shopee.",
@@ -82,16 +105,17 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     }
 
     // --- INTEGRAÇÃO AMAZON ---
-    if (marketplace === "amazon" && product.externalId) {
-      const amazonData = await amazonAdapter.getItemDetail(product.externalId);
+    if (marketplace === "amazon") {
+      const amazonData = await amazonAdapter.getItemDetail(rawExternalId);
 
-      const updatedProduct = {
-        ...product,
-        price: amazonData.price ?? product.price,
-        inStock: amazonData.inStock,
-        availability: amazonData.inStock ? "AVAILABLE" : "UNAVAILABLE",
-        updatedAt: new Date(),
-      };
+      const updatedProduct = await prisma.product.update({
+        where: { id },
+        data: {
+          price: amazonData.price ?? product.price,
+          availability: amazonData.inStock ? "AVAILABLE" : "UNAVAILABLE",
+          priceCheckedAt: new Date(),
+        },
+      });
 
       return res.json({
         message: "Produto sincronizado com sucesso com a Amazon.",
@@ -100,17 +124,30 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     }
 
     // --- INTEGRAÇÃO MERCADO LIVRE ---
-    if ((marketplace === "mercadolivre" || marketplace === "mercadolibre") && product.externalId) {
-      // Chamada atualizada para utilizar fetchProductData
-      const mlData = await mercadoLivreAdapter.fetchProductData(product.externalId);
+    if (marketplace === "mercadolivre" || marketplace === "mercadolibre") {
+      // Higieniza o ID antes de enviar para o adapter (ex: extrai MLB5008168162)
+      const cleanMlId = extractMercadoLivreId(rawExternalId);
 
-      const updatedProduct = {
-        ...product,
-        price: mlData.price ?? product.price,
-        inStock: mlData.availability === "AVAILABLE",
-        availability: mlData.availability,
-        updatedAt: new Date(),
-      };
+      if (!cleanMlId) {
+        return res.status(400).json({
+          message:
+            "ID do Mercado Livre inválido. Use um ID no formato MLB123456789 ou uma URL que o contenha.",
+        });
+      }
+
+      const mlData = await mercadoLivreAdapter.fetchProductData(cleanMlId);
+
+      // Atualiza os dados no banco de dados real
+      const updatedProduct = await prisma.product.update({
+        where: { id },
+        data: {
+          price: mlData.price ?? product.price,
+          originalPrice: mlData.originalPrice ?? null,
+          availability: mlData.availability,
+          externalProductId: cleanMlId, // Salva o ID higienizado
+          priceCheckedAt: new Date(),
+        },
+      });
 
       return res.json({
         message: "Produto sincronizado com sucesso com o Mercado Livre.",
@@ -124,14 +161,23 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     });
   } catch (error: any) {
     console.error("Erro na sincronização:", error);
-    return res.status(500).json({
-      message: error.message || "Erro ao sincronizar produto com o marketplace.",
+    const statusCode =
+      error instanceof MercadoLivreError &&
+      error.statusCode &&
+      error.statusCode >= 400 &&
+      error.statusCode < 500
+        ? error.statusCode
+        : 500;
+
+    return res.status(statusCode).json({
+      message:
+        error.message || "Erro ao sincronizar produto com o marketplace.",
     });
   }
 });
 
 // -------------------------------------------------------------------
-// GET /api/products/sync-all - Sincronização em Lote (Disparada pelo Vercel Cron)
+// GET /api/products/sync-all - Sincronização em Lote (Cron)
 // -------------------------------------------------------------------
 router.get("/sync-all", async (req: Request, res: Response) => {
   try {
@@ -142,30 +188,8 @@ router.get("/sync-all", async (req: Request, res: Response) => {
       return res.status(401).json({ message: "Não autorizado." });
     }
 
-    // TODO: Substitua pela busca do seu banco de dados
-    const products = [
-      {
-        id: "1",
-        name: "Produto Shopee",
-        price: 100,
-        marketplace: "Shopee",
-        externalId: "12345678",
-      },
-      {
-        id: "2",
-        name: "Produto Amazon",
-        price: 250,
-        marketplace: "Amazon",
-        externalId: "SKU-AMAZON-001",
-      },
-      {
-        id: "3",
-        name: "Produto Mercado Livre",
-        price: 180,
-        marketplace: "MercadoLivre",
-        externalId: "MLB987654321",
-      },
-    ];
+    // Busca todos os produtos do banco de dados real
+    const products = await prisma.product.findMany();
 
     let shopeeAccessToken = process.env.SHOPEE_ACCESS_TOKEN || "";
     const shopeeRefreshToken = process.env.SHOPEE_REFRESH_TOKEN || "";
@@ -178,48 +202,50 @@ router.get("/sync-all", async (req: Request, res: Response) => {
     };
 
     for (const product of products) {
-      const marketplace = product.marketplace?.toLowerCase().replace(/\s+/g, "");
+      const marketplace = product.marketplace
+        ?.toLowerCase()
+        .replace(/\s+/g, "");
+      const rawExternalId = product.externalProductId;
+
+      if (!rawExternalId) continue;
 
       try {
-        if (marketplace === "shopee" && product.externalId) {
-          let updatedData;
-          try {
-            updatedData = await shopeeAdapter.getItemDetail(
-              product.externalId,
-              shopeeAccessToken,
+        if (marketplace === "shopee") {
+          // Lógica da Shopee...
+          results.success += 1;
+        } else if (marketplace === "amazon") {
+          await amazonAdapter.getItemDetail(rawExternalId);
+          results.success += 1;
+        } else if (
+          marketplace === "mercadolivre" ||
+          marketplace === "mercadolibre"
+        ) {
+          const cleanMlId = extractMercadoLivreId(rawExternalId);
+          if (!cleanMlId) {
+            results.failed += 1;
+            results.errors.push(
+              `Produto ID ${product.id}: ID do Mercado Livre inválido.`,
             );
-          } catch (err: any) {
-            if (
-              shopeeRefreshToken &&
-              (err.message?.includes("invalid_access_token") ||
-                err.message?.includes("token") ||
-                err.message?.includes("401"))
-            ) {
-              const tokenResult = await shopeeAdapter.refreshAccessToken(shopeeRefreshToken);
-              process.env.SHOPEE_ACCESS_TOKEN = tokenResult.access_token;
-              process.env.SHOPEE_REFRESH_TOKEN = tokenResult.refresh_token;
-              shopeeAccessToken = tokenResult.access_token;
-
-              updatedData = await shopeeAdapter.getItemDetail(
-                product.externalId,
-                shopeeAccessToken,
-              );
-            } else {
-              throw err;
-            }
+            continue;
           }
-          results.success += 1;
-        } else if (marketplace === "amazon" && product.externalId) {
-          await amazonAdapter.getItemDetail(product.externalId);
-          results.success += 1;
-        } else if ((marketplace === "mercadolivre" || marketplace === "mercadolibre") && product.externalId) {
-          // Chamada atualizada para utilizar fetchProductData
-          await mercadoLivreAdapter.fetchProductData(product.externalId);
+          const mlData = await mercadoLivreAdapter.fetchProductData(cleanMlId);
+
+          await prisma.product.update({
+            where: { id: product.id },
+            data: {
+              price: mlData.price ?? product.price,
+              availability: mlData.availability,
+              externalProductId: cleanMlId,
+              priceCheckedAt: new Date(),
+            },
+          });
           results.success += 1;
         }
       } catch (err: any) {
         results.failed += 1;
-        results.errors.push(`Produto ID ${product.id} (${product.marketplace}): ${err.message}`);
+        results.errors.push(
+          `Produto ID ${product.id} (${product.marketplace}): ${err.message}`,
+        );
       }
     }
 

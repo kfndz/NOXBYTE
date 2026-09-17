@@ -23,12 +23,15 @@ export class PriceSyncService {
    * Normaliza strings de identificação do marketplace para a chave do mapa.
    */
   private normalizeMarketplaceKey(marketplace: string): string {
-    const cleaned = marketplace.trim().toUpperCase().replace(/[\s_-]+/g, "_");
-    
+    const cleaned = marketplace
+      .trim()
+      .toUpperCase()
+      .replace(/[\s_-]+/g, "_");
+
     if (cleaned.includes("MERCADO") || cleaned === "ML") {
       return "MERCADO_LIVRE";
     }
-    
+
     return cleaned;
   }
 
@@ -42,7 +45,7 @@ export class PriceSyncService {
       throw new Error("Produto não encontrado para sincronização.");
     }
 
-    if (!product.externalProductId?.trim()) {
+    if (!product.externalProductId?.trim() && !product.affiliateUrl?.trim()) {
       throw new Error(
         `O produto '${product.name}' não possui um externalProductId (ex: MLB123456) cadastrado.`,
       );
@@ -58,7 +61,12 @@ export class PriceSyncService {
     }
 
     // Consulta os dados atualizados no marketplace
-    const syncedData = await adapter.fetchProductData(product.externalProductId);
+    const identifier =
+      product.affiliateUrl?.trim() || product.externalProductId;
+    const syncedData = await adapter.fetchProductData(
+      identifier,
+      product.externalProductId?.trim(),
+    );
 
     // Atualiza o produto via ProductService mantendo os dados higienizados e validados
     const updatedProduct = await ProductService.update(product.id, {

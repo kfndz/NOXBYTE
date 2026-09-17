@@ -11,9 +11,6 @@ export interface MarketplaceAdapter {
    */
   readonly marketplaceName: string;
 
-  /**
-   * Busca as informações atualizadas do produto na API oficial do marketplace.
-   * @param externalProductId ID do produto no marketplace (ex: MLB123456789)
-   */
-  fetchProductData(externalProductId: string): Promise<SyncResult>;
+  /** Busca dados atualizados usando o ID do marketplace ou a URL de afiliado. */
+  fetchProductData(identifier: string, fallbackIdentifier?: string): Promise<SyncResult>;
 }

@@ -34,7 +34,8 @@ function extractMercadoLivreId(input: string): string | null {
 // -------------------------------------------------------------------
 router.post("/:id/sync", async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
+    const rawId = req.params.id;
+    const id = Array.isArray(rawId) ? rawId[0] : rawId;
 
     // 1. Busca o produto REAL no banco de dados
     const product = await prisma.product.findUnique({
@@ -49,8 +50,9 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
 
     const marketplace = product.marketplace?.toLowerCase().replace(/\s+/g, "");
     const rawExternalId = product.externalProductId;
+    const identifier = product.affiliateUrl?.trim() || rawExternalId;
 
-    if (!rawExternalId) {
+    if (!identifier) {
       return res
         .status(400)
         .json({ message: "Produto não possui um ID externo/link cadastrado." });
@@ -126,16 +128,19 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     // --- INTEGRAÇÃO MERCADO LIVRE ---
     if (marketplace === "mercadolivre" || marketplace === "mercadolibre") {
       // Higieniza o ID antes de enviar para o adapter (ex: extrai MLB5008168162)
-      const cleanMlId = extractMercadoLivreId(rawExternalId);
+      const cleanMlId = extractMercadoLivreId(identifier);
 
-      if (!cleanMlId) {
+      if (!cleanMlId && !identifier.startsWith("http")) {
         return res.status(400).json({
           message:
             "ID do Mercado Livre inválido. Use um ID no formato MLB123456789 ou uma URL que o contenha.",
         });
       }
 
-      const mlData = await mercadoLivreAdapter.fetchProductData(cleanMlId);
+      const mlData = await mercadoLivreAdapter.fetchProductData(
+        identifier,
+        rawExternalId?.trim(),
+      );
 
       // Atualiza os dados no banco de dados real
       const updatedProduct = await prisma.product.update({
@@ -144,7 +149,7 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
           price: mlData.price ?? product.price,
           originalPrice: mlData.originalPrice ?? null,
           availability: mlData.availability,
-          externalProductId: cleanMlId, // Salva o ID higienizado
+          externalProductId: cleanMlId || product.externalProductId,
           priceCheckedAt: new Date(),
         },
       });
@@ -163,10 +168,10 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     console.error("Erro na sincronização:", error);
     const statusCode =
       error instanceof MercadoLivreError &&
-      error.statusCode &&
-      error.statusCode >= 400 &&
-      error.statusCode < 500
-        ? error.statusCode
+      error.status &&
+      error.status >= 400 &&
+      error.status < 500
+        ? error.status
         : 500;
 
     return res.status(statusCode).json({
@@ -206,8 +211,9 @@ router.get("/sync-all", async (req: Request, res: Response) => {
         ?.toLowerCase()
         .replace(/\s+/g, "");
       const rawExternalId = product.externalProductId;
+      const identifier = product.affiliateUrl?.trim() || rawExternalId;
 
-      if (!rawExternalId) continue;
+      if (!identifier) continue;
 
       try {
         if (marketplace === "shopee") {
@@ -220,22 +226,25 @@ router.get("/sync-all", async (req: Request, res: Response) => {
           marketplace === "mercadolivre" ||
           marketplace === "mercadolibre"
         ) {
-          const cleanMlId = extractMercadoLivreId(rawExternalId);
-          if (!cleanMlId) {
+          const cleanMlId = extractMercadoLivreId(identifier);
+          if (!cleanMlId && !identifier.startsWith("http")) {
             results.failed += 1;
             results.errors.push(
               `Produto ID ${product.id}: ID do Mercado Livre inválido.`,
             );
             continue;
           }
-          const mlData = await mercadoLivreAdapter.fetchProductData(cleanMlId);
+          const mlData = await mercadoLivreAdapter.fetchProductData(
+            identifier,
+            rawExternalId?.trim(),
+          );
 
           await prisma.product.update({
             where: { id: product.id },
             data: {
               price: mlData.price ?? product.price,
               availability: mlData.availability,
-              externalProductId: cleanMlId,
+              externalProductId: cleanMlId || product.externalProductId,
               priceCheckedAt: new Date(),
             },
           });

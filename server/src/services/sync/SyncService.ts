@@ -4,12 +4,21 @@ import { MarketplaceAdapter } from "../../adapters/MarketplaceAdapter.js";
 export class SyncService {
   private adapters: Map<string, MarketplaceAdapter> = new Map();
 
+  private normalizeMarketplace(value: string): string {
+    return value
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]+/g, "_");
+  }
+
   constructor(adapters: MarketplaceAdapter[] = []) {
-    adapters.forEach((adapter) => this.adapters.set(adapter.marketplaceName, adapter));
+    adapters.forEach((adapter) => this.registerAdapter(adapter));
   }
 
   public registerAdapter(adapter: MarketplaceAdapter) {
-    this.adapters.set(adapter.marketplaceName, adapter);
+    this.adapters.set(this.normalizeMarketplace(adapter.marketplaceName), adapter);
   }
 
   /**
@@ -24,17 +33,27 @@ export class SyncService {
       throw new Error("Produto não encontrado.");
     }
 
-    if (!product.externalProductId) {
-      throw new Error("Produto não possui o ID externo (externalProductId) cadastrado.");
+    if (!product.externalProductId && !product.affiliateUrl) {
+      throw new Error(
+        "Produto não possui o ID externo (externalProductId) cadastrado.",
+      );
     }
 
-    const adapter = this.adapters.get(product.marketplace);
+    const marketplaceKey = this.normalizeMarketplace(product.marketplace);
+    const adapter = this.adapters.get(marketplaceKey);
     if (!adapter) {
-      throw new Error(`Sincronização para o marketplace '${product.marketplace}' ainda não está implementada.`);
+      throw new Error(
+        `Sincronização para o marketplace '${product.marketplace}' ainda não está implementada.`,
+      );
     }
 
     // Chama o método nativo do adaptador existente
-    const latestData = await adapter.fetchProductData(product.externalProductId);
+    const identifier =
+      product.affiliateUrl?.trim() || product.externalProductId;
+    const latestData = await adapter.fetchProductData(
+      identifier,
+      product.externalProductId?.trim(),
+    );
 
     // Atualiza preço e estado no banco de dados
     const updatedProduct = await prisma.product.update({

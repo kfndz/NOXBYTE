@@ -1,27 +1,7 @@
 import { MarketplaceAdapter, SyncResult } from "./MarketplaceAdapter.js";
 
-interface MercadoLivreItemResponse {
-  id: string;
-  price: number;
-  original_price: number | null;
-  status: string;
-}
-
-interface RefreshTokenResponse {
-  access_token: string;
-  refresh_token?: string;
-}
-
-export type MercadoLivreTokenPersistence = (tokens: {
-  accessToken: string;
-  refreshToken?: string;
-}) => Promise<void> | void;
-
 export class MercadoLivreError extends Error {
-  constructor(
-    message: string,
-    public readonly statusCode?: number,
-  ) {
+  constructor(message: string, public readonly status?: number) {
     super(message);
     this.name = "MercadoLivreError";
   }
@@ -29,177 +9,287 @@ export class MercadoLivreError extends Error {
 
 export class MercadoLivreAdapter implements MarketplaceAdapter {
   readonly marketplaceName = "MERCADO_LIVRE";
-  private readonly baseUrl = "https://api.mercadolibre.com";
-  private refreshPromise?: Promise<string>;
 
-  constructor(private readonly persistTokens?: MercadoLivreTokenPersistence) {}
+  private accessToken: string | null = null;
+  private accessTokenExpiresAt = 0;
 
-  private async refreshAccessToken(): Promise<string> {
-    if (this.refreshPromise) return this.refreshPromise;
+  private readonly userAgents = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
+    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 Chrome/124.0 Safari/537.36",
+  ];
 
-    this.refreshPromise = this.requestNewAccessToken();
-    try {
-      return await this.refreshPromise;
-    } finally {
-      this.refreshPromise = undefined;
-    }
+  private extractItemId(value: string): string | null {
+    const match = value.match(/(?:^|[^A-Z])(MLB)[-]?([0-9]{6,})(?:[^0-9]|$)/i);
+    return match ? `MLB${match[2]}`.toUpperCase() : null;
   }
 
-  private async requestNewAccessToken(): Promise<string> {
-    const clientId = process.env.MERCADO_LIVRE_CLIENT_ID;
-    const clientSecret = process.env.MERCADO_LIVRE_CLIENT_SECRET;
-    const refreshToken = process.env.MERCADO_LIVRE_REFRESH_TOKEN;
-
-    if (!clientId || !clientSecret || !refreshToken) {
-      throw new Error(
-        "Credenciais do Mercado Livre ausentes no .env (MERCADO_LIVRE_CLIENT_ID, MERCADO_LIVRE_CLIENT_SECRET, MERCADO_LIVRE_REFRESH_TOKEN).",
-      );
+  private normalizePrice(value: unknown): number | null {
+    if (typeof value === "number") {
+      return Number.isFinite(value) && value >= 0 ? value : null;
     }
 
-    console.info("[MercadoLivreAdapter] Renovando access token OAuth...");
+    if (typeof value !== "string") return null;
 
-    const response = await fetch(`${this.baseUrl}/oauth/token`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Accept: "application/json",
-      },
-      body: new URLSearchParams({
-        grant_type: "refresh_token",
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: refreshToken,
-      }),
-    });
+    const cleaned = value.replace(/[^0-9,.-]/g, "").trim();
+    if (!cleaned) return null;
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("[MercadoLivreAdapter] Erro ao renovar token:", errText);
-      throw new MercadoLivreError(
-        "Não foi possível renovar o token do Mercado Livre. O REFRESH_TOKEN pode ter expirado ou ser inválido.",
-        response.status,
-      );
+    const lastComma = cleaned.lastIndexOf(",");
+    const lastDot = cleaned.lastIndexOf(".");
+    let normalized = cleaned;
+
+    if (lastComma >= 0 && lastDot >= 0) {
+      const decimalSeparator = lastComma > lastDot ? "," : ".";
+      const thousandsSeparator = decimalSeparator === "," ? "." : ",";
+      normalized = cleaned
+        .replace(new RegExp(`\\${thousandsSeparator}`, "g"), "")
+        .replace(decimalSeparator, ".");
+    } else if (lastComma >= 0) {
+      normalized = /,\d{1,2}$/.test(cleaned)
+        ? cleaned.replace(/\./g, "").replace(",", ".")
+        : cleaned.replace(/,/g, "");
+    } else if ((cleaned.match(/\./g) || []).length > 1) {
+      normalized = cleaned.replace(/\./g, "");
+    } else if (/^\d+\.\d{3}$/.test(cleaned)) {
+      normalized = cleaned.replace(".", "");
     }
 
-    const data = (await response.json()) as RefreshTokenResponse;
+    const price = Number(normalized);
+    return Number.isFinite(price) && price >= 0 ? price : null;
+  }
 
-    if (!data.access_token) {
-      throw new MercadoLivreError(
-        "A resposta OAuth do Mercado Livre não contém access_token.",
-      );
-    }
+  private async fetchWithRetry(
+    url: string,
+    init: RequestInit = {},
+  ): Promise<Response> {
+    let lastError: unknown;
 
-    process.env.MERCADO_LIVRE_ACCESS_TOKEN = data.access_token;
-    if (data.refresh_token) {
-      process.env.MERCADO_LIVRE_REFRESH_TOKEN = data.refresh_token;
-    }
-
-    if (this.persistTokens) {
+    for (let attempt = 0; attempt < this.userAgents.length; attempt += 1) {
       try {
-        await this.persistTokens({
-          accessToken: data.access_token,
-          refreshToken: data.refresh_token,
+        const response = await fetch(url, {
+          ...init,
+          headers: {
+            Accept: "application/json",
+            "Accept-Language": "pt-BR,pt;q=0.9,en-US;q=0.8",
+            ...init.headers,
+            "User-Agent": this.userAgents[attempt],
+          },
+          redirect: "follow",
+          signal: AbortSignal.timeout(10_000),
         });
+
+        if (response.ok || (response.status !== 403 && response.status !== 429) || attempt === this.userAgents.length - 1) {
+          return response;
+        }
       } catch (error) {
-        console.error(
-          "[MercadoLivreAdapter] Token renovado, mas não persistido:",
-          error,
-        );
+        lastError = error;
       }
-    } else if (data.refresh_token) {
-      console.warn(
-        "[MercadoLivreAdapter] O Mercado Livre rotacionou o refresh_token; ele foi atualizado apenas em memória.",
-      );
     }
 
-    return data.access_token;
+    if (lastError) throw lastError;
+    throw new MercadoLivreError(`Mercado Livre bloqueou a requisição para ${url}`);
   }
 
-  async fetchProductData(externalProductId: string): Promise<SyncResult> {
-    const formattedId = externalProductId
-      .trim()
-      .toUpperCase()
-      .replace(/^MLB-/, "MLB");
-
-    if (!/^MLB\d+$/.test(formattedId)) {
-      throw new MercadoLivreError(
-        "ID do produto externo no Mercado Livre é inválido. Use o formato MLB123456789.",
-        400,
-      );
+  private async getValidAccessToken(): Promise<string | null> {
+    const now = Date.now();
+    if (this.accessToken && now < this.accessTokenExpiresAt - 60_000) {
+      return this.accessToken;
     }
 
-    let accessToken = process.env.MERCADO_LIVRE_ACCESS_TOKEN;
+    const configuredToken = process.env.MERCADO_LIVRE_ACCESS_TOKEN?.trim();
+    const refreshToken = process.env.MERCADO_LIVRE_REFRESH_TOKEN?.trim();
+    const clientId = process.env.MERCADO_LIVRE_CLIENT_ID?.trim();
+    const clientSecret = process.env.MERCADO_LIVRE_CLIENT_SECRET?.trim();
 
-    // 1. Se não tiver access_token inicial, renova imediatamente antes da 1ª chamada
-    if (!accessToken) {
-      accessToken = await this.refreshAccessToken();
+    if (!refreshToken || !clientId || !clientSecret) {
+      return configuredToken || null;
     }
 
-    const doFetch = async (token: string) => {
-      return fetch(`${this.baseUrl}/items/${formattedId}`, {
-        method: "GET",
+    try {
+      const response = await fetch("https://api.mercadolibre.com/oauth/token", {
+        method: "POST",
         headers: {
           Accept: "application/json",
-          Authorization: `Bearer ${token}`,
-          "User-Agent": "NOXBYTE-Platform/1.0",
+          "Content-Type": "application/x-www-form-urlencoded",
+          "User-Agent": this.userAgents[0],
         },
+        body: new URLSearchParams({
+          grant_type: "refresh_token",
+          client_id: clientId,
+          client_secret: clientSecret,
+          refresh_token: refreshToken,
+        }),
+        signal: AbortSignal.timeout(10_000),
       });
-    };
 
-    let response = await doFetch(accessToken);
-
-    if (response.status === 401 || response.status === 403) {
-      console.warn(
-        `[MercadoLivreAdapter] API respondeu ${response.status}; tentando uma renovação OAuth única.`,
-      );
+      const responseText = await response.text();
+      let data: any = null;
       try {
-        accessToken = await this.refreshAccessToken();
-        response = await doFetch(accessToken);
-      } catch (refreshError) {
-        const message =
-          refreshError instanceof Error
-            ? refreshError.message
-            : "erro desconhecido";
-        throw new MercadoLivreError(
-          `Falha de autenticação no Mercado Livre: ${message}`,
-          response.status,
-        );
+        data = JSON.parse(responseText);
+      } catch {
+        data = null;
       }
+
+      if (!response.ok || !data?.access_token) {
+        console.error("[MercadoLivreAdapter] Falha ao renovar token:", {
+          status: response.status,
+          error: data?.error,
+          message: data?.message,
+        });
+        return configuredToken || null;
+      }
+
+      this.accessToken = data.access_token;
+      this.accessTokenExpiresAt = now + Number(data.expires_in ?? 21_600) * 1000;
+
+      if (data.refresh_token) {
+        process.env.MERCADO_LIVRE_REFRESH_TOKEN = data.refresh_token;
+      }
+
+      return this.accessToken;
+    } catch (error) {
+      console.error("[MercadoLivreAdapter] Erro ao renovar token:", error);
+      return configuredToken || null;
+    }
+  }
+
+  private async resolveItemId(identifier: string): Promise<string | null> {
+    let url: URL;
+    try {
+      url = new URL(identifier);
+    } catch {
+      return this.extractItemId(identifier);
     }
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        throw new MercadoLivreError(
-          `Produto '${formattedId}' não encontrado. Verifique se o ID informado é válido (ex: MLB123456789).`,
-          404,
-        );
-      }
-      if (response.status === 403) {
-        throw new MercadoLivreError(
-          "Acesso negado pelo PolicyAgent do Mercado Livre após renovar o token. Verifique aplicação, usuário autorizado e credenciais OAuth.",
-          403,
-        );
-      }
-      throw new MercadoLivreError(
-        `Erro ao consultar API do Mercado Livre (status ${response.status}).`,
-        response.status,
-      );
+    // Em URLs de catálogo, o ID do produto (/p/MLB...) pode ser diferente
+    // do ID do anúncio informado em item_id, que deve ter prioridade.
+    const queryId = url.searchParams.get("item_id");
+    const queryItemId = queryId ? this.extractItemId(queryId) : null;
+    if (queryItemId) return queryItemId;
+
+    const directId = this.extractItemId(identifier);
+    if (directId) return directId;
+
+    const response = await this.fetchWithRetry(url.toString());
+    const candidates = [response.url, response.headers.get("location") ?? ""];
+    for (const candidate of candidates) {
+      const itemId = this.extractItemId(candidate);
+      if (itemId) return itemId;
     }
 
-    const data = (await response.json()) as MercadoLivreItemResponse;
+    const html = await response.text();
+    const canonical = html.match(
+      /<(?:link[^>]+rel=["']canonical["'][^>]+href|meta[^>]+property=["']og:url["'][^>]+content)=["']([^"']+)/i,
+    );
+    return canonical ? this.extractItemId(canonical[1]) : this.extractItemId(html);
+  }
 
-    let availability: SyncResult["availability"] = "UNKNOWN";
-    if (data.status === "active") {
-      availability = "AVAILABLE";
-    } else if (data.status === "paused" || data.status === "closed") {
-      availability = "UNAVAILABLE";
+  private async apiHeaders(accessToken?: string | null): Promise<HeadersInit> {
+    return {
+      Accept: "application/json",
+      "User-Agent": this.userAgents[0],
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    };
+  }
+
+  private async readApiResponse(response: Response): Promise<any | null> {
+    const responseText = await response.text();
+    try {
+      return JSON.parse(responseText);
+    } catch {
+      return null;
     }
+  }
+
+  private getSyncResult(item: any): SyncResult | null {
+    const price = this.normalizePrice(item?.price);
+    if (price === null) return null;
 
     return {
-      price: data.price,
-      originalPrice: data.original_price ?? null,
-      availability,
-      rawResponse: data,
+      price,
+      originalPrice: this.normalizePrice(item.original_price),
+      availability: item.status === "active" ? "AVAILABLE" : "UNAVAILABLE",
+      rawResponse: item,
     };
+  }
+
+  async fetchProductData(
+    identifier: string,
+    fallbackIdentifier?: string,
+  ): Promise<SyncResult> {
+    let itemId: string | null = null;
+    try {
+      itemId = await this.resolveItemId(identifier);
+    } catch (error) {
+      console.error(`[MercadoLivreAdapter] Erro ao resolver ${identifier}:`, error);
+    }
+
+    // Links meli.la podem apontar para uma landing social sem o MLB no HTML.
+    itemId ??= fallbackIdentifier ? this.extractItemId(fallbackIdentifier) : null;
+
+    if (!itemId) {
+      throw new MercadoLivreError(
+        "Não foi possível identificar o anúncio do Mercado Livre a partir do link ou externalProductId.",
+      );
+    }
+
+    let lastStatus: number | undefined;
+    const accessToken = await this.getValidAccessToken();
+    const headers = await this.apiHeaders(accessToken);
+
+    // O access token renovado é usado primeiro; a consulta anônima fica como fallback.
+    try {
+      const itemResponse = await this.fetchWithRetry(
+        `https://api.mercadolibre.com/items/${itemId}`,
+        { headers },
+      );
+      lastStatus = itemResponse.status;
+
+      if (itemResponse.ok) {
+        const result = this.getSyncResult(await this.readApiResponse(itemResponse));
+        if (result) return result;
+      } else {
+        const errorBody = await this.readApiResponse(itemResponse);
+        console.error("[MercadoLivreAdapter] Erro no endpoint de item:", {
+          status: itemResponse.status,
+          error: errorBody?.error,
+          code: errorBody?.code,
+          message: errorBody?.message,
+        });
+      }
+    } catch (error) {
+      console.error(`[MercadoLivreAdapter] Falha no endpoint direto:`, error);
+    }
+
+    try {
+      const searchResponse = await this.fetchWithRetry(
+        `https://api.mercadolibre.com/sites/MLB/search?q=${encodeURIComponent(itemId)}`,
+        { headers },
+      );
+      lastStatus = searchResponse.status;
+
+      if (searchResponse.ok) {
+        const searchData = await this.readApiResponse(searchResponse);
+        const item = searchData?.results?.find(
+          (candidate: any) => String(candidate?.id).toUpperCase() === itemId,
+        );
+        const result = this.getSyncResult(item);
+        if (result) return result;
+      } else {
+        const errorBody = await this.readApiResponse(searchResponse);
+        console.error("[MercadoLivreAdapter] Erro no endpoint de busca:", {
+          status: searchResponse.status,
+          error: errorBody?.error,
+          code: errorBody?.code,
+          message: errorBody?.message,
+        });
+      }
+    } catch (err) {
+      console.error(`[MercadoLivreAdapter] Falha no endpoint de busca:`, err);
+    }
+
+    throw new MercadoLivreError(
+      `Não foi possível obter o preço do anúncio ${itemId} no Mercado Livre.`,
+      lastStatus,
+    );
   }
 }

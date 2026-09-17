@@ -282,7 +282,7 @@ export const ProductService = {
   async syncProduct(id: string): Promise<Product> {
     const token = localStorage.getItem("admin_token"); // ou a forma utilizada de recuperar o token do admin
 
-    const response = await fetch(`/api/products/${id}/sync`, {
+    const response = await fetch(`/api/products/sync?id=${encodeURIComponent(id)}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

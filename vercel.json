@@ -11,6 +11,10 @@
       "destination": "/api/products/sync-all"
     },
     {
+      "source": "/api/products/:id/sync",
+      "destination": "/api/products/sync?id=:id"
+    },
+    {
       "source": "/api/products/:id",
       "destination": "/api/products/[id]"
     },

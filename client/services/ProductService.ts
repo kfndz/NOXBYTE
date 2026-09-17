@@ -279,7 +279,9 @@ export const ProductService = {
     clearProductsCache();
   },
 
-  async syncProduct(id: string): Promise<Product> {
+  async syncProduct(
+    id: string,
+  ): Promise<Product & { syncStatus?: "synced" | "skipped_third_party" }> {
     const token = localStorage.getItem("admin_token"); // ou a forma utilizada de recuperar o token do admin
 
     const response = await fetch(`/api/products/sync?id=${encodeURIComponent(id)}`, {
@@ -298,14 +300,10 @@ export const ProductService = {
     }
 
     const data = await response.json();
-    if (data.syncStatus === "skipped_third_party") {
-      throw new Error(
-        data.message ||
-          "Sincronização ignorada: o Mercado Livre não autorizou este anúncio.",
-      );
-    }
-
-    return data.product;
+    return {
+      ...data.product,
+      syncStatus: data.syncStatus,
+    };
   },
 
 };

@@ -222,7 +222,13 @@ export default function AdminProducts() {
         ),
       );
 
-      setFeedback(`Produto '${product.name}' sincronizado com sucesso.`);
+      if (updatedProduct.syncStatus === "skipped_third_party") {
+        setFeedback(
+          `Preço não atualizado: o Mercado Livre não autorizou o anúncio '${product.name}'. O valor atual foi preservado.`,
+        );
+      } else {
+        setFeedback(`Produto '${product.name}' sincronizado com sucesso.`);
+      }
     } catch (err) {
       setError(
         err instanceof Error

@@ -298,6 +298,13 @@ export const ProductService = {
     }
 
     const data = await response.json();
+    if (data.syncStatus === "skipped_third_party") {
+      throw new Error(
+        data.message ||
+          "Sincronização ignorada: o Mercado Livre não autorizou este anúncio.",
+      );
+    }
+
     return data.product;
   },
 

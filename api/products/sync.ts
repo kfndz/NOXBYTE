@@ -22,10 +22,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     const updatedProduct = await syncService.syncSingleProduct(productId);
+    const wasSkipped = updatedProduct &&
+      "syncStatus" in updatedProduct &&
+      updatedProduct.syncStatus === "skipped_third_party";
 
     return res.status(200).json({
       success: true,
-      message: "Produto sincronizado com sucesso!",
+      message: wasSkipped
+        ? "Sincronização ignorada: a API do Mercado Livre não autorizou este anúncio."
+        : "Produto sincronizado com sucesso!",
+      syncStatus: wasSkipped ? "skipped_third_party" : "synced",
       product: updatedProduct,
     });
   } catch (error: any) {

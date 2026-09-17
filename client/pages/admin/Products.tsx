@@ -214,9 +214,12 @@ export default function AdminProducts() {
 
       const updatedProduct = await ProductService.syncProduct(product.id);
 
-      // Atualiza o produto sincronizado dentro da lista local mantendo os dados atualizados
       setProducts((prev) =>
-        prev.map((item) => (item.id === updatedProduct.id ? updatedProduct : item)),
+        prev.map((item) =>
+          item.id === updatedProduct.id
+            ? { ...item, ...updatedProduct }
+            : item,
+        ),
       );
 
       setFeedback(`Produto '${product.name}' sincronizado com sucesso.`);

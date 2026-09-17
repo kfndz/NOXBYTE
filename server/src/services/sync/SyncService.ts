@@ -27,6 +27,10 @@ export class SyncService {
   public async syncSingleProduct(productId: string) {
     const product = await prisma.product.findUnique({
       where: { id: productId },
+      include: {
+        category: true,
+        subcategory: true,
+      },
     });
 
     if (!product) {
@@ -59,7 +63,10 @@ export class SyncService {
     );
 
     if (latestData.syncStatus === "skipped_third_party") {
-      return product;
+      return {
+        ...product,
+        syncStatus: "skipped_third_party" as const,
+      };
     }
 
     // Atualiza preço e estado no banco de dados
@@ -73,6 +80,12 @@ export class SyncService {
       },
     });
 
-    return updatedProduct;
+    return prisma.product.findUniqueOrThrow({
+      where: { id: updatedProduct.id },
+      include: {
+        category: true,
+        subcategory: true,
+      },
+    });
   }
 }

@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { SyncService } from "../../server/src/services/sync/SyncService.js";
-import { MercadoLivreAdapter } from "../../server/src/adapters/MercadoLivreAdapter.js";
+import {
+  MercadoLivreAdapter,
+  MercadoLivreError,
+} from "../../server/src/adapters/MercadoLivreAdapter.js";
 
 const syncService = new SyncService([
   new MercadoLivreAdapter(),
@@ -27,9 +30,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   } catch (error: any) {
     console.error("[API Sync Error]:", error);
-    return res.status(400).json({
+    const status =
+      error instanceof MercadoLivreError && error.status && error.status >= 400
+        ? error.status
+        : 400;
+
+    return res.status(status).json({
       success: false,
       error: error.message || "Erro interno ao sincronizar produto.",
+      message: error.message || "Erro interno ao sincronizar produto.",
     });
   }
 }

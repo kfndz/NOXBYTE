@@ -48,12 +48,19 @@ export class SyncService {
     }
 
     // Chama o método nativo do adaptador existente
-    const identifier =
-      product.affiliateUrl?.trim() || product.externalProductId;
+    if (!product.externalProductId?.trim()) {
+      throw new Error(
+        "Sincronização exige externalProductId; affiliateUrl não é usado como fonte de dados.",
+      );
+    }
+
     const latestData = await adapter.fetchProductData(
-      identifier,
-      product.externalProductId?.trim(),
+      product.externalProductId.trim(),
     );
+
+    if (latestData.syncStatus === "skipped_third_party") {
+      return product;
+    }
 
     // Atualiza preço e estado no banco de dados
     const updatedProduct = await prisma.product.update({

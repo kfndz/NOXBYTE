@@ -61,12 +61,19 @@ export class PriceSyncService {
     }
 
     // Consulta os dados atualizados no marketplace
-    const identifier =
-      product.affiliateUrl?.trim() || product.externalProductId;
+    if (!product.externalProductId?.trim()) {
+      throw new Error(
+        "Sincronização exige externalProductId; affiliateUrl não é usado como fonte de dados.",
+      );
+    }
+
     const syncedData = await adapter.fetchProductData(
-      identifier,
-      product.externalProductId?.trim(),
+      product.externalProductId.trim(),
     );
+
+    if (syncedData.syncStatus === "skipped_third_party") {
+      return product;
+    }
 
     // Atualiza o produto via ProductService mantendo os dados higienizados e validados
     const updatedProduct = await ProductService.update(product.id, {

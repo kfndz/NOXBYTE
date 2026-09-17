@@ -152,37 +152,6 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
     }
   }
 
-  private async resolveItemId(identifier: string): Promise<string | null> {
-    let url: URL;
-    try {
-      url = new URL(identifier);
-    } catch {
-      return this.extractItemId(identifier);
-    }
-
-    // Em URLs de catálogo, o ID do produto (/p/MLB...) pode ser diferente
-    // do ID do anúncio informado em item_id, que deve ter prioridade.
-    const queryId = url.searchParams.get("item_id");
-    const queryItemId = queryId ? this.extractItemId(queryId) : null;
-    if (queryItemId) return queryItemId;
-
-    const directId = this.extractItemId(identifier);
-    if (directId) return directId;
-
-    const response = await this.fetchWithRetry(url.toString());
-    const candidates = [response.url, response.headers.get("location") ?? ""];
-    for (const candidate of candidates) {
-      const itemId = this.extractItemId(candidate);
-      if (itemId) return itemId;
-    }
-
-    const html = await response.text();
-    const canonical = html.match(
-      /<(?:link[^>]+rel=["']canonical["'][^>]+href|meta[^>]+property=["']og:url["'][^>]+content)=["']([^"']+)/i,
-    );
-    return canonical ? this.extractItemId(canonical[1]) : this.extractItemId(html);
-  }
-
   private async apiHeaders(accessToken?: string | null): Promise<HeadersInit> {
     return {
       Accept: "application/json",
@@ -208,23 +177,25 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
       price,
       originalPrice: this.normalizePrice(item.original_price),
       availability: item.status === "active" ? "AVAILABLE" : "UNAVAILABLE",
+      syncStatus: "synced",
       rawResponse: item,
     };
   }
 
-  async fetchProductData(
-    identifier: string,
-    fallbackIdentifier?: string,
-  ): Promise<SyncResult> {
-    let itemId: string | null = null;
-    try {
-      itemId = await this.resolveItemId(identifier);
-    } catch (error) {
-      console.error(`[MercadoLivreAdapter] Erro ao resolver ${identifier}:`, error);
-    }
+  private skippedThirdParty(itemId: string, status: number): SyncResult {
+    return {
+      price: 0,
+      originalPrice: null,
+      availability: "UNKNOWN",
+      syncStatus: "skipped_third_party",
+      skipReason: `Mercado Livre recusou o acesso ao anúncio ${itemId}.`,
+      rawResponse: { status, itemId },
+    };
+  }
 
-    // Links meli.la podem apontar para uma landing social sem o MLB no HTML.
-    itemId ??= fallbackIdentifier ? this.extractItemId(fallbackIdentifier) : null;
+  async fetchProductData(externalProductId: string): Promise<SyncResult> {
+    // affiliateUrl/meli.la pertence ao frontend e nunca deve ser buscado pelo backend.
+    const itemId = this.extractItemId(externalProductId);
 
     if (!itemId) {
       throw new MercadoLivreError(
@@ -256,6 +227,9 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
           message: errorBody?.message,
         });
       }
+      if (itemResponse.status === 401 || itemResponse.status === 403) {
+        return this.skippedThirdParty(itemId, itemResponse.status);
+      }
     } catch (error) {
       console.error(`[MercadoLivreAdapter] Falha no endpoint direto:`, error);
     }
@@ -282,6 +256,9 @@ export class MercadoLivreAdapter implements MarketplaceAdapter {
           code: errorBody?.code,
           message: errorBody?.message,
         });
+      }
+      if (searchResponse.status === 401 || searchResponse.status === 403) {
+        return this.skippedThirdParty(itemId, searchResponse.status);
       }
     } catch (err) {
       console.error(`[MercadoLivreAdapter] Falha no endpoint de busca:`, err);

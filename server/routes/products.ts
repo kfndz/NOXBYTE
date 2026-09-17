@@ -128,19 +128,31 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
     // --- INTEGRAÇÃO MERCADO LIVRE ---
     if (marketplace === "mercadolivre" || marketplace === "mercadolibre") {
       // Higieniza o ID antes de enviar para o adapter (ex: extrai MLB5008168162)
-      const cleanMlId = extractMercadoLivreId(identifier);
+      const cleanMlId = extractMercadoLivreId(rawExternalId ?? "");
 
-      if (!cleanMlId && !identifier.startsWith("http")) {
+      if (!cleanMlId) {
         return res.status(400).json({
           message:
             "ID do Mercado Livre inválido. Use um ID no formato MLB123456789 ou uma URL que o contenha.",
         });
       }
 
-      const mlData = await mercadoLivreAdapter.fetchProductData(
-        identifier,
-        rawExternalId?.trim(),
-      );
+      if (!rawExternalId?.trim()) {
+        return res.status(400).json({
+          message: "externalProductId é obrigatório para sincronizar o Mercado Livre.",
+        });
+      }
+
+      const mlData = await mercadoLivreAdapter.fetchProductData(rawExternalId.trim());
+
+      if (mlData.syncStatus === "skipped_third_party") {
+        return res.json({
+          message: "Sincronização ignorada: o anúncio pertence a um terceiro ou está bloqueado pela API.",
+          product,
+          syncStatus: mlData.syncStatus,
+          reason: mlData.skipReason,
+        });
+      }
 
       // Atualiza os dados no banco de dados real
       const updatedProduct = await prisma.product.update({
@@ -149,7 +161,7 @@ router.post("/:id/sync", async (req: Request, res: Response) => {
           price: mlData.price ?? product.price,
           originalPrice: mlData.originalPrice ?? null,
           availability: mlData.availability,
-          externalProductId: cleanMlId || product.externalProductId,
+          externalProductId: cleanMlId,
           priceCheckedAt: new Date(),
         },
       });
@@ -226,25 +238,37 @@ router.get("/sync-all", async (req: Request, res: Response) => {
           marketplace === "mercadolivre" ||
           marketplace === "mercadolibre"
         ) {
-          const cleanMlId = extractMercadoLivreId(identifier);
-          if (!cleanMlId && !identifier.startsWith("http")) {
+          const cleanMlId = extractMercadoLivreId(rawExternalId ?? "");
+          if (!cleanMlId) {
             results.failed += 1;
             results.errors.push(
               `Produto ID ${product.id}: ID do Mercado Livre inválido.`,
             );
             continue;
           }
+          if (!rawExternalId?.trim()) {
+            results.failed += 1;
+            results.errors.push(
+              `Produto ID ${product.id}: externalProductId é obrigatório.`,
+            );
+            continue;
+          }
+
           const mlData = await mercadoLivreAdapter.fetchProductData(
-            identifier,
-            rawExternalId?.trim(),
+            rawExternalId.trim(),
           );
+
+          if (mlData.syncStatus === "skipped_third_party") {
+            results.success += 1;
+            continue;
+          }
 
           await prisma.product.update({
             where: { id: product.id },
             data: {
               price: mlData.price ?? product.price,
               availability: mlData.availability,
-              externalProductId: cleanMlId || product.externalProductId,
+              externalProductId: cleanMlId,
               priceCheckedAt: new Date(),
             },
           });

@@ -2,6 +2,8 @@ export type SyncResult = {
   price: number;
   originalPrice: number | null;
   availability: "AVAILABLE" | "UNAVAILABLE" | "UNKNOWN";
+  syncStatus?: "synced" | "skipped_third_party";
+  skipReason?: string;
   rawResponse?: unknown;
 };
 
@@ -11,6 +13,6 @@ export interface MarketplaceAdapter {
    */
   readonly marketplaceName: string;
 
-  /** Busca dados atualizados usando o ID do marketplace ou a URL de afiliado. */
-  fetchProductData(identifier: string, fallbackIdentifier?: string): Promise<SyncResult>;
+  /** Busca dados usando exclusivamente o ID do produto no marketplace. */
+  fetchProductData(externalProductId: string): Promise<SyncResult>;
 }

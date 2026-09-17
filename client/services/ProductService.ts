@@ -300,8 +300,10 @@ export const ProductService = {
     }
 
     const data = await response.json();
+    const normalizedProduct = normalizeProduct(data.product as ApiProduct);
+
     return {
-      ...data.product,
+      ...normalizedProduct,
       syncStatus: data.syncStatus,
     };
   },
